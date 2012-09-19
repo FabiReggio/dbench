@@ -1,0 +1,4 @@
+To install MongoDB simply execute the following command:
+
+#as root
+sh mongodb_install.sh 
