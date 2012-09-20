@@ -14,8 +14,9 @@ __contact__ = "chutsu at gmail.com"
 repeat = 5  # number of times to repeat for each test
 db_name = "test"
 collection_name = "test_collection"
-data_file = "../../twitter_data/100meters.json.test"
-# data_file = "../../twitter_data/100meters.json"
+# data_file = "../../twitter_data/100meters.json.test"
+data_file = "../../twitter_data/100meters.json"
+io_results_file = "./io_results.dat"
 header = [
     "n",
     "insert (s)",
@@ -53,7 +54,7 @@ def init_results(file, header):
         header (array): list of header objects 
     """
     with open(file, "wb") as csv_file:
-        csv_writier = csv.writer(csv_file, delimiter = ",")
+        csv_writer = csv.writer(csv_file, delimiter = ",")
         csv_writer.writerow(header)
         csv_file.close()
 
@@ -64,66 +65,78 @@ def log_result(file, row):
         row (array): list of objects to write into row
     """
     with open(file, "a") as csv_file:
-        csv_writier = csv.writer(csv_file, delimiter = ",")
+        csv_writer = csv.writer(csv_file, delimiter = ",")
         csv_writer.writerow(row)
+        csv_file.close()
 
-def test_insert(collection, data, repeat = 1):
+def test_insert(collection, data):
     """Tests MongoDB's insert performance
     Description:
-        the test function simply takes the json data and inserts different
-        percentages of the data into the MongoDB. For example if data has
-        100 entries, the test function will insert 10% then 20%, 30%, and 
-        so on until it reaches 100%
+        this test function records the time taken to insert entries in
+        the collection
+    Args:
+        collection (collection obj): collection
+        data (JSON): JSON data to be inserted
+    """
+    start_time = time.time()
+    collection.insert(data)
+    time_taken = time.time() - start_time 
+    print "Insert Time: %s seconds" % (time_taken)
+    return time_taken
 
-        The time taken for each insert is recorded
+def test_remove(collection, objects):
+    """Tests MongoDB's remove performance
+    Description:
+        this test function records the time taken to remove all entries in
+        the collection
+    Args:
+        collection (collection obj): collection
+        objects (int): number of objects to be removed
+    """
+    start_time = time.time()
+    collection.remove({}) # remove all documents in collection
+    time_taken = time.time() - start_time
+    print "Remove Time: %s seconds" % (time_taken)
+    return time_taken
+
+def test_find(collection, objects):
+    """Tests MongoDB's find performance
+    Description:
+        this test function records the time taken to find entries in
+        the collection
+    Args:
+        collection (collection obj): collection
+        objects (int): number of objects to be removed
+    """
+
+def test_io_runner(collection, data, repeat, results_file):
+    """Test Runner
     Args:
         collection (collection obj): collection
         data (JSON): JSON data to be inserted
         repeat (int): repeat n times 
+        results_file (string): file path to the results file
     """
     size = len(data)
     for x in range(1, repeat + 1):
         print "Run Number %i:" % (x)
         # insert a range of different sizes
         for i in range(1, 11): # from 1 to 10
-            # preparation
-            start_time = time.time()
+            # prep 
             objs = int(size * (0.1 * i)) # obj to be inserted
 
-            # execution
-            collection.insert(data[0: objs])
-            time_taken = time.time() - start_time 
-            print "Insert Time [n = %i]: %s seconds" % (objs, time_taken)
+            # tests
+            insert_time = test_insert(collection, data[0: objs]) 
+            remove_time = test_remove(collection, data[0: objs])
 
-            # clean up
-            test_remove(collection, objs)
-
-def test_remove(collection, objects):
-    """Tests MongoDB's remove performance
-    Description:
-        the test function records the time taken to remove all entries in
-        the collection
-    Args:
-        collection (collection obj): collection
-        objects (int): number of objects to be removed
-    """
-    # preparation
-    start_time = time.time()
-
-    # execution
-    collection.remove({}) # remove all documents in collection
-    time_taken = time.time() - start_time
-    print "Remove Time [n = %i]: %s seconds" % (objects, time_taken)
+            # clean up 
+            row = [objs, insert_time, remove_time]
+            log_result(results_file, row)
 
 if __name__ == "__main__":
     collection = db_prep(db_name)
     data = load_data(data_file)
 
     print "Testing MongoDB's I/O performance"
-    test_insert(collection, data, repeat) 
-    # test_remove is included at end of each insert test 
-    
-    # for c in collection.find():
-    #     print c["_id"]
-        
-
+    init_results(io_results_file, header)
+    test_io_runner(collection, data, repeat, io_results_file)
