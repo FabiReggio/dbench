@@ -57,8 +57,18 @@ GridFS is MongoDB's solution to storing binary data in the database. BSON suppor
 GridFS works by storing the information about the file (called metadata) in the `files` collection. The data itself is broken down into pieces called `chunks` that are stored in the `chunks` collection. This approach makes storing data both easy and scalable; it also makes range operations (such as retrieving specific parts of a file) much easier to use.[[3]][MongoDB Book]
 
 
-# NUMA machine
-Depending on the machine you are running, if the machine is a NUMA machine or Non-Uniform Memeory Access, MongoDB complains the following:
+
+
+
+# Starting MongoDB
+To start MongoDB provided it has been installed properly one would execute the following command:
+
+    mongod     # as root, lauching mongo daemon
+
+
+
+## NUMA machine
+Depending on the machine you are running, if the machine is a NUMA machine or Non-Uniform Memeory Access (see appendix A), MongoDB complains the following:
 
     Thu Sep 20 12:49:58 [initandlisten] ** WARNING: You are running on a NUMA machine.
     Thu Sep 20 12:49:58 [initandlisten] **          We suggest launching mongod like this to avoid performance problems:
@@ -68,8 +78,15 @@ To solve this problem if on a NUMA machine is to run the following:
 
     sudo numactl --interleave=all /usr/local/bin/mongod
 
-Note: This is slightly different from the command given by the warning message, since numactl has to be run with root permission and the full path of mongodb has to be given.
+Note: This is slightly different from the command given by the warning message, since numactl has to be run with root permission and the full path of mongodb has to be given. 
 
+
+
+
+
+
+# Appendix
+## Appendix A - NUMA Machine
 NUMA machines provide a linear address space, allowing all processors to directly address all memory. This feature exploits the 64-bit addressing available in modern scientific computers. The advantages over distributed memory machines include:
 
 - Faster movement of data

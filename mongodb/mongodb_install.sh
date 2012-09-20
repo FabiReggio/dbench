@@ -9,3 +9,6 @@ cp mongodb-linux-x86_64-2.2.0/bin/* /usr/local/bin/
 rm mongodb-linux-x86_64-2.2.0.tgz 
 rm -rf mongodb-linux-x86_64-2.2.0
 
+# make the data directory, required by mongo
+mkdir /data/db/
+
