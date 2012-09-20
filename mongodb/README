@@ -1,0 +1,7 @@
+-> To install MongoDB simply execute the following command:
+
+	sh mongodb_install.sh	# as root
+
+-> After installation run the mongo daemon to start mongoDB 
+
+    numactl --interleave=all /usr/local/bin/mongod  # as root
