@@ -1,22 +1,27 @@
 #!/usr/bin/env python
-import fileinput
 import json
 import time
 import csv
 
-import pymongo
+import MySQLdb as mysql 
 """ 
-MongoDB Tests 
+MySQL Tests
 """
 __author__ = "Chris Choi"
 __contact__ = "chutsu at gmail.com"
 
 # global variables
 repeat = 5  # number of times to repeat for each test
+
+db_host = "localhost"
+db_user = ""
+db_pass = ""
 db_name = "test"
-collection_name = "test_collection"
-data_file = "../../twitter_data/100meters.json.test"
-io_results_file = "./io_results_mongodb.dat"
+table_name = "test_table"
+
+# data_file = "../../twitter_data/100meters.json.test"
+data_file = "../../twitter_data/100meters.json"
+io_results_file = "./io_results_mysql.dat"
 header = [
     "n",
     "insert (s)",
@@ -24,27 +29,42 @@ header = [
 ]
 
 
-def db_prep(db_name):
-    """Prep MongoDB
+def db_prep(db_host, db_user, db_pass, db_name, test_table):
+    """Prep MySQL 
     Args:
+        db_host (str): database host
+        db_user (str): username
+        db_pass (str): password
         db_name (str): database name
+        test_table (str): table name
     Returns:
-        collection object (equiv to a table in a RDBMS)
+        database connection object
     """
-    connection = pymongo.Connection() 
-    dbconn = connection[db_name]
-    collection = dbconn[collection_name]
-    return collection 
+    dbconn = ""
+    try:
+        dbconn = mysql.connect(db_host, db_user, db_pass, db_name)
+    except mysql.Error, e:
+        sys.stderr.write("Error: cannot connect to database!\n")
+        sys.stderr.write(str(e) + "\n")
+    return dbconn 
 
-# def load_data(file):
-#     """Load Data File 
-#     Args:
-#         file (str): file path
-#     Returns:
-#         File object
-#     """
-#     with open(file, "rb") as f:
-#         return f 
+def db_close(dbconn):
+    """Close database connection
+    Args:
+        dbconn (db connection obj): database connection
+    """
+    dbconn.close()
+
+def load_data(file):
+    """Load JSON Data
+    Args:
+        file (str): file path
+    Returns:
+        JSON data
+    """
+    with open(file, "rb") as f:
+        data = json.load(f)
+        return data
 
 def init_results(file, header):
     """Initiates a test result file to be written
@@ -68,24 +88,18 @@ def log_result(file, row):
         csv_writer.writerow(row)
         csv_file.close()
 
-def test_insert(collection, data_file):
+def test_insert(collection, data):
     """Tests MongoDB's insert performance
     Description:
         this test function records the time taken to insert entries in
         the collection
     Args:
-        collection (collection obj): collection
-        data_file (str): path to data file
+        dbconn (database connection obj): database connection
+        data (JSON): JSON data to be inserted
     """
-    time_taken = 0
-    # while pymongo supports bulk insertion have used a for loop to make 
-    # a fair comparison  against other tests
-    for line in fileinput.input([data_file]):
-        if line[0] != "[" or line[0] != ",": 
-            print line
-            start_time = time.time()
-            collection.insert(line)
-            time_taken += time.time() - start_time 
+    start_time = time.time()
+    collection.insert(data)
+    time_taken = time.time() - start_time 
     print "Insert Time: %s seconds" % (time_taken)
     return time_taken
 
@@ -95,7 +109,7 @@ def test_remove(collection, objects):
         this test function records the time taken to remove all entries in
         the collection
     Args:
-        collection (collection obj): collection
+        dbconn (database connection obj): database connection
         objects (int): number of objects to be removed
     """
     start_time = time.time()
@@ -110,15 +124,15 @@ def test_find(collection, objects):
         this test function records the time taken to find entries in
         the collection
     Args:
-        collection (collection obj): collection
+        dbconn (database connection obj): database connection
         objects (int): number of objects to be removed
     """
 
-def test_io_runner(collection, data_file, repeat, results_file):
+def test_io_runner(dbconn, data, repeat, results_file):
     """Test Runner
     Args:
-        collection (collection obj): collection
-        data_file (str): path to data file
+        dbconn (database connection obj): database connection
+        data (JSON): JSON data to be inserted
         repeat (int): repeat n times 
         results_file (string): file path to the results file
     """
@@ -139,9 +153,9 @@ def test_io_runner(collection, data_file, repeat, results_file):
             log_result(results_file, row)
 
 if __name__ == "__main__":
-    collection = db_prep(db_name)
-    # data = load_data(data_file)
+    dbconn = db_prep(db_name)
+    data = load_data(data_file)
 
     print "Testing MongoDB's I/O performance"
     init_results(io_results_file, header)
-    test_io_runner(collection, data_file, repeat, io_results_file)
+    test_io_runner(dbconn, data, repeat, io_results_file)

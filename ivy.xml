@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0">
+	<!-- INFO -->
+	<info organisation="" 
+			module="" 
+			revision="0.1">
+		<ivyauthor name="Chris Choi"/>
+		<description>
+			
+		</description>
+	</info>
+
+    <!-- DEPENDENCIES -->
+    <dependencies>
+		<dependency 
+			org="mysql" 
+			name="mysql-connector-java" 
+			rev="5.1.19"/>
+        <dependency 
+            org="org.mongodb" 
+            name="mongo-java-driver" 
+            rev="1.3"/>
+	</dependencies>
+</ivy-module>
