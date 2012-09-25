@@ -50,6 +50,9 @@ public class TestRunner
 		this.mongodb = new MongoDBAdaptor();
 		this.mongodb.connect(db_host, db_port, db_name);
 		this.mongodb.setCollection(collection);
+		
+		// remove everything in the test collection
+		this.mongodb.removeAll();
 	}
 	
 	public long testInsert(String document) 
@@ -72,21 +75,25 @@ public class TestRunner
 	{
 		try {
 			File data_file = new File(file_path);
+			FileManager file_manager = new FileManager();
 			
 			// prepare the database for testing first
 			prepDB();
 			
+			// prepare results file
+			file_manager.prepFileWriter("results.dat");
+			
 			// processing file
-			System.out.println("processing file: " + file_path);
 			int num_lines = lineCount(file_path);
+			System.out.println("processing file: " + file_path);
 			System.out.println("number of lines: " + num_lines);
 			
 			// perform test at different percentile grades
-			for (int i: range(1, 11)) { // go from 1 to 10
+			for (int i: range(1, 21)) { // go from 1 to 20
 				long insert_time = 0;
 				long remove_time = 0;
 				long objects = 0; // number of objs inserted
-				float percentage = (float) (0.1 * i);
+				float percentage = (float) (0.05 * i);
 				int lines_to_process = (int) (num_lines * percentage);
 				
 				// insert test 
@@ -107,6 +114,8 @@ public class TestRunner
 				}
 				line_iter.close(); // close to reset the iterator  
 				
+//				System.out.printf("collection count: %d \n", this.mongodb.getCollectionCount());
+				
 				// remove test 
 				remove_time = testRemove();
 				
@@ -117,7 +126,18 @@ public class TestRunner
 				System.out.printf("insert time: %d ms\n", insert_time);
 				System.out.printf("remove time: %d ms\n", remove_time);
 				System.out.println("-----------------------------------------");
-				System.out.printf("collection count: %d \n", this.mongodb.getCollectionCount());
+//				System.out.printf("collection count: %d \n", this.mongodb.getCollectionCount());
+				
+				// log results 
+				
+				String[] csv_line = {
+						Long.toString(objects),
+						Long.toString(insert_time),
+						Long.toString(objects / insert_time), // obj per sec
+						Long.toString(remove_time),
+						Long.toString(objects / remove_time) // obj per sec
+				};
+				file_manager.csvLogEvent(csv_line);
 			}
 		} catch (NullPointerException e) {
 			System.out.println("error: " + e);
@@ -179,7 +199,7 @@ public class TestRunner
 		TestRunner tr = new TestRunner();
 		
 		String bbc = "/datadisk1/home/chris/twitter_data/bbc/";
-		String olympics = "/datadisk1/home/chris/twitter_data/100meters.json.test";
+		String olympics = "/datadisk1/home/chris/twitter_data/100meters.json";
 		
 //		tr.testRunnerMultipleFiles(bbc);
 		tr.singleFileTest(olympics);
