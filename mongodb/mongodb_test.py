@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import fileinput
 import json
+import ast
 import time
 import csv
 
@@ -68,7 +69,7 @@ def log_result(file, row):
         csv_writer.writerow(row)
         csv_file.close()
 
-def test_insert(collection, data_file):
+def test_insert(collection, data_file, objs):
     """Tests MongoDB's insert performance
     Description:
         this test function records the time taken to insert entries in
@@ -76,16 +77,22 @@ def test_insert(collection, data_file):
     Args:
         collection (collection obj): collection
         data_file (str): path to data file
+        objs (int): number of objects to be inserted
     """
     time_taken = 0
+    line_count = 0
+
     # while pymongo supports bulk insertion have used a for loop to make 
     # a fair comparison  against other tests
     for line in fileinput.input([data_file]):
-        if line[0] != "[" or line[0] != ",": 
-            print line
+        if line[0] != "[" and line[0] != "," and line_count <= objs: 
+            data = ast.literal_eval(line)
+
             start_time = time.time()
-            collection.insert(line)
+            collection.insert(data)
             time_taken += time.time() - start_time 
+
+            line_count += 1
     print "Insert Time: %s seconds" % (time_taken)
     return time_taken
 
@@ -122,7 +129,7 @@ def test_io_runner(collection, data_file, repeat, results_file):
         repeat (int): repeat n times 
         results_file (string): file path to the results file
     """
-    size = len(data)
+    size = (file_len(data_file) / 2) - 2
     for x in range(1, repeat + 1):
         print "Run Number %i:" % (x)
         # insert a range of different sizes
@@ -131,12 +138,19 @@ def test_io_runner(collection, data_file, repeat, results_file):
             objs = int(size * (0.1 * i)) # obj to be inserted
 
             # tests
-            insert_time = test_insert(collection, data[0: objs]) 
-            remove_time = test_remove(collection, data[0: objs])
+            insert_time = test_insert(collection, data_file, objs) 
+            remove_time = test_remove(collection)
 
             # clean up 
             row = [objs, insert_time, remove_time]
             log_result(results_file, row)
+
+def file_len(fname):
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
+            
 
 if __name__ == "__main__":
     collection = db_prep(db_name)

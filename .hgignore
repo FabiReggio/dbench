@@ -3,4 +3,5 @@
 bin/
 build/
 docs/
-
+lib/
+lib/*

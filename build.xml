@@ -4,6 +4,8 @@
 	<property name="builddir" value="build"/>
 	<property name="libdir" value="lib"/>
 	<property name="docdir" value="docs"/>
+	<property name="unittests" value="src/unittests"/>
+	<property name="report.tests" value="docs/unittests"/>
 
 	<!-- PATH IDS -->
 	<path id="buildpath">
