@@ -44,15 +44,17 @@ public class FileManager
 	public boolean csvLogEvent(String[] elements) 
 	{
 		try {
-			for (String element : elements) {
-				this.file_writer.append(element);
-				this.file_writer.append(",");
+			for (int i = 0; i < elements.length; i++) {
+				this.file_writer.append(elements[i]);
+				if ((i + 1) != elements.length)
+					this.file_writer.append(",");
 			}
 			this.file_writer.append("\n");
+			this.file_writer.flush();
 		} catch (IOException e) {
 			System.out.println("error: " + e);
 			return false;
-		}
+		} 
 		return true;
 	}
 	

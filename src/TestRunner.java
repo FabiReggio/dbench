@@ -1,9 +1,10 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -13,12 +14,7 @@ import org.junit.runner.notification.Failure;
 
 import unittests.MongoDBUnitTests;
 import db.MongoDBAdaptor;
-import db.IMongoDBAdaptor;
 import io.FileManager;
-
-
-
-
 
 public class TestRunner 
 {
@@ -30,10 +26,7 @@ public class TestRunner
 	private String collection = "test_collection";
 	
 	// --- Constructors ---
-	public TestRunner() 
-	{
-//	    runUnitTests();
-	}
+	public TestRunner() {}
 	
 	// --- Methods ---
 	public void runUnitTests() 
@@ -55,33 +48,96 @@ public class TestRunner
 		this.mongodb.removeAll();
 	}
 	
-	public long testInsert(String document) 
+	
+	public ArrayList<Float> testInsert(
+			File data_file, 
+			int lines_limit) 
 	{
-		long start_time = System.currentTimeMillis();
-		this.mongodb.insert(document);
-		long execution_time = System.currentTimeMillis() - start_time;
-		return execution_time;
+		int line_number = 0;
+		float objects = 0; // objects inserted
+		String line = "";
+		float execution_time = 0;
+		
+		LineIterator line_iter;
+		try {
+			line_iter = FileUtils.lineIterator(data_file);		
+			long start_time = System.currentTimeMillis();
+			while (line_iter.hasNext()) {
+				line = line_iter.next();
+				
+				// check line number and line
+				if ((line_number == lines_limit)) {
+					break;
+				} else if (line.charAt(0) == '{') { 
+					this.mongodb.insert(line);
+					objects += 1;
+				}
+				line_number += 1;
+			}
+			line_iter.close(); // close to reset the iterator  
+			execution_time = System.currentTimeMillis() - start_time;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return new ArrayList<Float>(Arrays.asList(execution_time, objects));
 	}
 	
-	public long testRemove()
+	public ArrayList<Float> testRemove(
+			File data_file,
+			int lines_limit)
 	{
-		long start_time = System.currentTimeMillis();
-		this.mongodb.removeAll();
-		long execution_time = System.currentTimeMillis() - start_time;
-		return execution_time;
+		int line_number = 0;
+		float objects = 0; // objects removed
+		String line = "";
+		float execution_time = 0;
+		
+		LineIterator line_iter;
+		try {
+			line_iter = FileUtils.lineIterator(data_file);		
+			long start_time = System.currentTimeMillis();
+			while (line_iter.hasNext()) {
+				line = line_iter.next();
+				
+				// check line number and line
+				if ((line_number == lines_limit)) {
+					break;
+				} else if (line.charAt(0) == '{') { 
+					this.mongodb.insert(line);
+					objects += 1;
+				}
+				line_number += 1;
+			}
+			line_iter.close(); // close to reset the iterator  
+			execution_time = System.currentTimeMillis() - start_time;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return new ArrayList<Float>(Arrays.asList(execution_time, objects));
 	}
 	
 	public void singleFileTest(String file_path) 
 	{
+		File data_file = new File(file_path);
+		FileManager file_manager = new FileManager();
+		ArrayList<Float> insert_res = new ArrayList<Float>();
+		ArrayList<Float> remove_res = new ArrayList<Float>();
 		try {
-			File data_file = new File(file_path);
-			FileManager file_manager = new FileManager();
 			
 			// prepare the database for testing first
 			prepDB();
 			
 			// prepare results file
 			file_manager.prepFileWriter("results.dat");
+			String[] header_line = {
+					"objects",
+					"insert", 
+					"remove", 
+					"insert per sec",
+					"remove per sec"
+			};
+			file_manager.csvLogEvent(header_line);
 			
 			// processing file
 			int num_lines = lineCount(file_path);
@@ -90,52 +146,36 @@ public class TestRunner
 			
 			// perform test at different percentile grades
 			for (int i: range(1, 21)) { // go from 1 to 20
-				long insert_time = 0;
-				long remove_time = 0;
-				long objects = 0; // number of objs inserted
 				float percentage = (float) (0.05 * i);
 				int lines_to_process = (int) (num_lines * percentage);
 				
-				// insert test 
-				int line_number = 0;
-				String line = "";
-				LineIterator line_iter = FileUtils.lineIterator(data_file);
-				while (line_iter.hasNext()) {
-					line = line_iter.next();
-					
-					// check line number and line
-					if ((line_number == lines_to_process)) {
-						break;
-					} else if (line.charAt(0) == '{') { 
-						insert_time += testInsert(line); // perform test
-						objects += 1;
-					}
-					line_number += 1;
-				}
-				line_iter.close(); // close to reset the iterator  
+				insert_res = testInsert(new File(file_path), lines_to_process);
+				remove_res = testRemove(new File(file_path), lines_to_process);
 				
-//				System.out.printf("collection count: %d \n", this.mongodb.getCollectionCount());
-				
-				// remove test 
-				remove_time = testRemove();
+				// calculate insert and remove per second
+				float objects = insert_res.get(1);
+				float obj_inserted_per_sec = objects / insert_res.get(0);
+				float obj_removed_per_sec = objects / remove_res.get(0);
 				
 				// display results
 				System.out.println("--------------- Results -----------------");
-				System.out.printf("tested: %d \n", objects);
-				System.out.printf("lines tested: %d \n", line_number);
-				System.out.printf("insert time: %d ms\n", insert_time);
-				System.out.printf("remove time: %d ms\n", remove_time);
+				System.out.printf("tested: %f \n", insert_res.get(1));
+				System.out.printf("lines tested: %d \n", lines_to_process);
+				System.out.printf("insert time: %f ms\n", insert_res.get(0));
+				System.out.printf("remove time: %f ms\n", remove_res.get(0));
+				System.out.printf("insert/second: %f ms\n", obj_inserted_per_sec);
+				System.out.printf("remove/second: %f ms\n", obj_removed_per_sec);
 				System.out.println("-----------------------------------------");
-//				System.out.printf("collection count: %d \n", this.mongodb.getCollectionCount());
 				
 				// log results 
-				
+				if (Float.isInfinite(obj_removed_per_sec)) 
+					obj_removed_per_sec = 0;
 				String[] csv_line = {
-						Long.toString(objects),
-						Long.toString(insert_time),
-						Long.toString(objects / insert_time), // obj per sec
-						Long.toString(remove_time),
-						Long.toString(objects / remove_time) // obj per sec
+						Float.toString(insert_res.get(1)), // objects tested
+						Float.toString(insert_res.get(0)), // insert time
+						Float.toString(remove_res.get(0)), // remove time
+						Float.toString(obj_inserted_per_sec), // obj per sec
+						Float.toString(obj_removed_per_sec), // obj per sec
 				};
 				file_manager.csvLogEvent(csv_line);
 			}
@@ -143,23 +183,8 @@ public class TestRunner
 			System.out.println("error: " + e);
 		} catch (IOException e) {
 			System.out.println("error: " + e);
-		}
-	}
-	
-	public void testRunnerMultipleFiles(String dir_path) 
-	{
-		try {
-			File dir = new File(dir_path);
-			File[] file_list = dir.listFiles(); 
-			
-			for (File file: file_list) {
-				System.out.println("processing file: " + file.getName());
-				if (file.isFile()) {
-					singleFileTest(file.getAbsolutePath());
-				}
-			}
-		} catch (NullPointerException e) {
-			System.out.println("error: " + e);
+		} finally {
+			file_manager.closeFileWriter();
 		}
 	}
 	
@@ -196,12 +221,11 @@ public class TestRunner
 	
 	// --- Main ---
 	public static void main(String[] argv) {
+		String olympics = "/datadisk1/home/chris/twitter_data/100meters.json";
+		String olympicsraw = "/home/jenkins/userContent/olympics3.raw";
+
 		TestRunner tr = new TestRunner();
 		
-		String bbc = "/datadisk1/home/chris/twitter_data/bbc/";
-		String olympics = "/datadisk1/home/chris/twitter_data/100meters.json";
-		
-//		tr.testRunnerMultipleFiles(bbc);
 		tr.singleFileTest(olympics);
 	}
 }
