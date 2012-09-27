@@ -20,15 +20,20 @@ public class TestRunner
 {
 	// --- Fields ---
 	private MongoDBAdaptor mongodb;
-	private String db_host = "localhost";
+	private String db_host = "project06.cs.st-andrews.ac.uk";
 	private int db_port = 27017;
-	private String db_name = "test";
+	private String db_name = "testDB";
 	private String collection = "test_collection";
 	
 	// --- Constructors ---
 	public TestRunner() {}
 	
 	// --- Methods ---
+	/**
+	 * Not to be confused with the database performance test, the unit 
+	 * tests serve as a confirmation that an interface in communicating with
+	 * MongoDB does indeed work.
+	 */
 	public void runUnitTests() 
     {
         System.out.println("running Unit Tests!");
@@ -38,6 +43,9 @@ public class TestRunner
         }
     }
 	
+	/**
+	 * Prepare database for tests
+	 */
 	public void prepDB()
 	{
 		this.mongodb = new MongoDBAdaptor();
@@ -48,6 +56,9 @@ public class TestRunner
 		this.mongodb.removeAll();
 	}
 	
+	/**
+	 * Clean up database
+	 */
 	public void cleanUpDB()
 	{
 		this.mongodb.removeAll();
@@ -70,11 +81,15 @@ public class TestRunner
 			long start_time = System.currentTimeMillis();
 			while (line_iter.hasNext()) {
 				line = line_iter.next();
+				boolean test = false;
 				
-				// check line number and line
+				// check first char of line
+				try { if (line.charAt(0) == '{') test = true;
+				} catch (IndexOutOfBoundsException e) {}
+				
 				if ((line_number == lines_limit)) {
 					break;
-				} else if (line.charAt(0) == '{') { 
+				} else if (test) { 
 					if (mode.equals("insert"))
 						this.mongodb.insert(line);
 					else if (mode.equals("remove"))
@@ -92,7 +107,16 @@ public class TestRunner
 		return new ArrayList<Float>(Arrays.asList(execution_time, objects));
 	}
 	
-	public void singleFileTest(String file_path) 
+	/**
+	 * Uses a single data file containing the JSON objects as the source for the 
+	 * database tests. The test investigates:
+	 * - insert time per JSON object
+	 * - remove time per JSON object 
+	 * 
+	 * @param file_path
+	 * @param res_path 
+	 */
+	public void singleFileTest(String file_path, String res_path) 
 	{
 		FileManager file_manager = new FileManager();
 		ArrayList<Float> insert_res = new ArrayList<Float>();
@@ -103,7 +127,7 @@ public class TestRunner
 			prepDB();
 			
 			// prepare results file
-			file_manager.prepFileWriter("results.dat");
+			file_manager.prepFileWriter(res_path);
 			String[] header_line = {
 					"objects",
 					"insert", 
@@ -113,16 +137,22 @@ public class TestRunner
 			};
 			file_manager.csvLogEvent(header_line);
 			
+			// sleep for a bit before starting test
+			// 60000 ms -> 1 mins * 60 seconds * 1000ms
+			System.out.println("Sleeping for 1 mins!");
+			Thread.currentThread().sleep(60000); 
+			
 			// processing file
 			int num_lines = lineCount(file_path);
 			System.out.println("processing file: " + file_path);
 			System.out.println("number of lines: " + num_lines);
 			
 			// perform test at different percentile grades
-			for (int i: range(1, 21)) { // go from 1 to 20
-				float percentage = (float) (0.05 * i);
+			for (int i: range(1, 11)) { // go from 1 to 10
+				float percentage = (float) (0.1 * i);
 				int line_limit = (int) (num_lines * percentage);
 				
+				System.out.println("Start test!");
 				insert_res = testIO(new File(file_path), line_limit, "insert");
 				remove_res = testIO(new File(file_path), line_limit, "remove");
 				
@@ -152,16 +182,30 @@ public class TestRunner
 						Float.toString(obj_removed_per_sec), // obj per sec
 				};
 				file_manager.csvLogEvent(csv_line);
+				
+				// sleep for a bit before running the next test
+				// 300000 ms -> 5 mins * 60 seconds * 1000ms
+				System.out.println("Sleeping for 5 mins!");
+				Thread.currentThread().sleep(300000); 
+				System.out.println("Right time to wake up!");
 			}
 		} catch (NullPointerException e) {
 			System.out.println("error: " + e);
 		} catch (IOException e) {
+			System.out.println("error: " + e);
+		} catch (InterruptedException e) {
 			System.out.println("error: " + e);
 		} finally {
 			file_manager.closeFileWriter();
 		}
 	}
 	
+	/**
+	 * Returns the number of lines the file may have
+	 * @param filename
+	 * @return An integer of number of lines
+	 * @throws IOException
+	 */
 	public int lineCount(String filename) throws IOException {
 		FileInputStream fs = new FileInputStream(filename);
 	    InputStream is = new BufferedInputStream(fs);
@@ -183,13 +227,19 @@ public class TestRunner
 	    }
 	}
 	
+	/**
+	 * Similar to Python's range function
+	 * @param start
+	 * @param stop
+	 * @return An array of integers starting from start to stop defined
+	 */
 	public int[] range(int start, int stop)
 	{
 	   int[] result = new int[stop-start];
-
+	   
 	   for(int i=0;i<stop-start;i++)
 	      result[i] = start+i;
-
+	   
 	   return result;
 	}
 	
@@ -201,7 +251,10 @@ public class TestRunner
 
 		TestRunner tr = new TestRunner();
 		
-//		tr.singleFileTest(test);
-		tr.singleFileTest(test2);
+		for (int i: tr.range(1, 6)) { // repeat 5 times
+			System.out.println("Run number: " + Integer.toString(i));
+			tr.singleFileTest(test2, "results_" + i + ".dat");
+		}
+//		tr.singleFileTest(test, 5);
 	}
 }
