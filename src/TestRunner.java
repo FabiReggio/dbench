@@ -108,6 +108,26 @@ public class TestRunner
 	}
 	
 	/**
+	 * Displays IOtest Results
+	 */
+	public void displayIOResults(
+			int line_limit,
+			ArrayList<Float> insert_res,
+			ArrayList<Float> remove_res,
+			Float inserted_per_msec,
+			Float removed_per_msec)
+	{
+		System.out.println("-------------- Results -----------------");
+		System.out.printf("tested: %f \n", insert_res.get(1));
+		System.out.printf("lines tested: %d \n", line_limit);
+		System.out.printf("insert time: %f ms\n", insert_res.get(0));
+		System.out.printf("remove time: %f ms\n", remove_res.get(0));
+		System.out.printf("insert/sec: %f ms\n", inserted_per_msec);
+		System.out.printf("remove/sec: %f ms\n", removed_per_msec);
+		System.out.println("----------------------------------------");
+	}
+	
+	/**
 	 * Uses a single data file containing the JSON objects as the source for the 
 	 * database tests. The test investigates:
 	 * - insert time per JSON object
@@ -132,8 +152,8 @@ public class TestRunner
 					"objects",
 					"insert", 
 					"remove", 
-					"insert per sec",
-					"remove per sec"
+					"insert per msec",
+					"remove per msec"
 			};
 			file_manager.csvLogEvent(header_line);
 			
@@ -158,28 +178,24 @@ public class TestRunner
 				
 				// calculate insert and remove per second
 				float objects = insert_res.get(1);
-				float obj_inserted_per_sec = objects / insert_res.get(0);
-				float obj_removed_per_sec = objects / remove_res.get(0);
+				float inserted_per_msec = objects / insert_res.get(0);
+				float removed_per_msec = objects / remove_res.get(0);
 				
 				// display results
-				System.out.println("-------------- Results -----------------");
-				System.out.printf("tested: %f \n", insert_res.get(1));
-				System.out.printf("lines tested: %d \n", line_limit);
-				System.out.printf("insert time: %f ms\n", insert_res.get(0));
-				System.out.printf("remove time: %f ms\n", remove_res.get(0));
-				System.out.printf("insert/sec: %f ms\n", obj_inserted_per_sec);
-				System.out.printf("remove/sec: %f ms\n", obj_removed_per_sec);
-				System.out.println("----------------------------------------");
+				displayIOResults(
+						line_limit, 
+						insert_res, 
+						remove_res, 
+						inserted_per_msec,
+						removed_per_msec);
 				
 				// log results 
-				if (Float.isInfinite(obj_removed_per_sec)) 
-					obj_removed_per_sec = 0;
 				String[] csv_line = {
 						Float.toString(insert_res.get(1)), // objects tested
 						Float.toString(insert_res.get(0)), // insert time
 						Float.toString(remove_res.get(0)), // remove time
-						Float.toString(obj_inserted_per_sec), // obj per sec
-						Float.toString(obj_removed_per_sec), // obj per sec
+						Float.toString(inserted_per_msec), // obj per sec
+						Float.toString(removed_per_msec), // obj per sec
 				};
 				file_manager.csvLogEvent(csv_line);
 				
