@@ -48,10 +48,16 @@ public class TestRunner
 		this.mongodb.removeAll();
 	}
 	
+	public void cleanUpDB()
+	{
+		this.mongodb.removeAll();
+		this.mongodb.disconnect();
+	}
 	
-	public ArrayList<Float> testInsert(
+	public ArrayList<Float> testIO(
 			File data_file, 
-			int lines_limit) 
+			int lines_limit,
+			String mode) 
 	{
 		int line_number = 0;
 		float objects = 0; // objects inserted
@@ -69,41 +75,10 @@ public class TestRunner
 				if ((line_number == lines_limit)) {
 					break;
 				} else if (line.charAt(0) == '{') { 
-					this.mongodb.insert(line);
-					objects += 1;
-				}
-				line_number += 1;
-			}
-			line_iter.close(); // close to reset the iterator  
-			execution_time = System.currentTimeMillis() - start_time;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		return new ArrayList<Float>(Arrays.asList(execution_time, objects));
-	}
-	
-	public ArrayList<Float> testRemove(
-			File data_file,
-			int lines_limit)
-	{
-		int line_number = 0;
-		float objects = 0; // objects removed
-		String line = "";
-		float execution_time = 0;
-		
-		LineIterator line_iter;
-		try {
-			line_iter = FileUtils.lineIterator(data_file);		
-			long start_time = System.currentTimeMillis();
-			while (line_iter.hasNext()) {
-				line = line_iter.next();
-				
-				// check line number and line
-				if ((line_number == lines_limit)) {
-					break;
-				} else if (line.charAt(0) == '{') { 
-					this.mongodb.insert(line);
+					if (mode.equals("insert"))
+						this.mongodb.insert(line);
+					else if (mode.equals("remove"))
+						this.mongodb.remove(line);
 					objects += 1;
 				}
 				line_number += 1;
@@ -119,7 +94,6 @@ public class TestRunner
 	
 	public void singleFileTest(String file_path) 
 	{
-		File data_file = new File(file_path);
 		FileManager file_manager = new FileManager();
 		ArrayList<Float> insert_res = new ArrayList<Float>();
 		ArrayList<Float> remove_res = new ArrayList<Float>();
@@ -147,10 +121,10 @@ public class TestRunner
 			// perform test at different percentile grades
 			for (int i: range(1, 21)) { // go from 1 to 20
 				float percentage = (float) (0.05 * i);
-				int lines_to_process = (int) (num_lines * percentage);
+				int line_limit = (int) (num_lines * percentage);
 				
-				insert_res = testInsert(new File(file_path), lines_to_process);
-				remove_res = testRemove(new File(file_path), lines_to_process);
+				insert_res = testIO(new File(file_path), line_limit, "insert");
+				remove_res = testIO(new File(file_path), line_limit, "remove");
 				
 				// calculate insert and remove per second
 				float objects = insert_res.get(1);
@@ -158,14 +132,14 @@ public class TestRunner
 				float obj_removed_per_sec = objects / remove_res.get(0);
 				
 				// display results
-				System.out.println("--------------- Results -----------------");
+				System.out.println("-------------- Results -----------------");
 				System.out.printf("tested: %f \n", insert_res.get(1));
-				System.out.printf("lines tested: %d \n", lines_to_process);
+				System.out.printf("lines tested: %d \n", line_limit);
 				System.out.printf("insert time: %f ms\n", insert_res.get(0));
 				System.out.printf("remove time: %f ms\n", remove_res.get(0));
-				System.out.printf("insert/second: %f ms\n", obj_inserted_per_sec);
-				System.out.printf("remove/second: %f ms\n", obj_removed_per_sec);
-				System.out.println("-----------------------------------------");
+				System.out.printf("insert/sec: %f ms\n", obj_inserted_per_sec);
+				System.out.printf("remove/sec: %f ms\n", obj_removed_per_sec);
+				System.out.println("----------------------------------------");
 				
 				// log results 
 				if (Float.isInfinite(obj_removed_per_sec)) 
@@ -221,11 +195,13 @@ public class TestRunner
 	
 	// --- Main ---
 	public static void main(String[] argv) {
-		String olympics = "/datadisk1/home/chris/twitter_data/100meters.json";
+		String test = "/datadisk1/home/chris/twitter_data/100meters.json";
+		String test2 = "/datadisk1/home/chris/twitter_data/100meters.json.test";
 		String olympicsraw = "/home/jenkins/userContent/olympics3.raw";
 
 		TestRunner tr = new TestRunner();
 		
-		tr.singleFileTest(olympics);
+//		tr.singleFileTest(test);
+		tr.singleFileTest(test2);
 	}
 }
