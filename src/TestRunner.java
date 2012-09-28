@@ -31,8 +31,8 @@ public class TestRunner
 	// --- Methods ---
 	/**
 	 * Not to be confused with the database performance test, the unit 
-	 * tests serve as a confirmation that an interface in communicating with
-	 * MongoDB does indeed work.
+	 * tests serve as a confirmation that an interface in communicating 
+	 * with MongoDB does indeed work.
 	 */
 	public void runUnitTests() 
     {
@@ -128,8 +128,8 @@ public class TestRunner
 	}
 	
 	/**
-	 * Uses a single data file containing the JSON objects as the source for the 
-	 * database tests. The test investigates:
+	 * Uses a single data file containing the JSON objects as the source 
+	 * for the database tests. The test investigates:
 	 * - insert time per JSON object
 	 * - remove time per JSON object 
 	 * 
@@ -261,15 +261,15 @@ public class TestRunner
 	
 	// --- Main ---
 	public static void main(String[] argv) {
-		String test = "/datadisk1/home/chris/twitter_data/100meters.json";
-		String test2 = "/datadisk1/home/chris/twitter_data/100meters.json.test";
+		String t = "/datadisk1/home/chris/twitter_data/100meters.json";
+		String t2 = "/datadisk1/home/chris/twitter_data/100meters.json.test";
 		String olympicsraw = "/home/jenkins/userContent/olympics3.raw";
 
 		TestRunner tr = new TestRunner();
 		
 		for (int i: tr.range(1, 6)) { // repeat 5 times
 			System.out.println("Run number: " + Integer.toString(i));
-			tr.singleFileTest(test2, "results_" + i + ".dat");
+			tr.singleFileTest(t2, "results_" + i + ".dat");
 		}
 //		tr.singleFileTest(test, 5);
 	}

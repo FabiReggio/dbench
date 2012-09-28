@@ -124,7 +124,7 @@ public class MongoDBAdaptor implements IMongoDBAdaptor
 	
     /**
      * Insert a list of documents 
-     * @param data ArrayList of String which contains JSON Data to be inserted
+     * @param data ArrayList of String which contains JSON Data 
      * @param collection Collection name to insert document 
      */
 	public boolean insertBulk(ArrayList<String> data)
@@ -257,11 +257,10 @@ public class MongoDBAdaptor implements IMongoDBAdaptor
 //    }
 
     /**
-     * Find documents
-     * @param query Query string
+     * Find documents - Jongo Method Test
      * @return
      */
-	public Iterable<Tweet> findTweets(String query)
+	public Iterable<Tweet> jongoFindTweets()
     {
 		
 		Jongo jongo = new Jongo(this.mongodb.getDB(this.db_name));
@@ -270,6 +269,28 @@ public class MongoDBAdaptor implements IMongoDBAdaptor
 		Iterable<Tweet> tweets = collection.find(query).as(Tweet.class);
 		return tweets;
     }
+
+    /**
+     * Find documents - Object Method Test
+     * @param query Query string
+     * @return
+     */
+	public Iterable<Tweet> objectFindTweets()
+    {
+		return tweets;
+    }
+
+    /**
+     * Find documents - QueryBuilder Method Test
+     * @param query Query string
+     * @return
+     */
+	public Iterable<Tweet> objectFindTweets()
+    {
+	    Iterable<Tweet> = this.collection.find(	
+		return tweets;
+    }
+
 	
 	/**
 	 * Checks to see if a MongoDB collection has been selected
