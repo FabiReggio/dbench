@@ -1,0 +1,178 @@
+# Time Bucket
+# Jongo Method
+db.twitter_sample.group({ 
+    cond: {"created_at": {$regex : 'Sun Aug 05 14:10' }}, 
+    key: {},   initial: {sum: 0},   
+    reduce: function(doc, prev) { prev.sum += 1} 
+});
+# Object Method
+# Query Method
+
+
+
+
+
+# Most Retweeted Tweet
+# Jongo Method
+db.twitter_sample.find(
+     {}, 
+     {"text" : 1, "retweet_count" : 1}
+).sort({"retweet_count": -1})
+
+# Object Method
+# Query Method
+
+
+
+
+
+# Most Mentioned Account
+# MAP-REDUCE Method
+var map = function() {
+    this.entities.user_mentions.forEach(
+        function(mention) {
+            emit(mention.screen_name, { count: 1 });
+        }
+    )
+};
+
+var reduce = function(key, values) {
+    // NB: reduce() uses same format as results emitted by map()
+    var result = { count: 0 };
+
+    values.forEach(function(value) {
+        result.count += value.count;
+    });
+
+    return result;
+};
+
+result = db.runCommand({
+	"mapreduce" : "twitter_sample",
+	"map" : map,
+	"reduce" : reduce,
+	"out" : "user_mentions"
+});
+
+db.hash_tags.find({}).sort({ "value.count" : -1});
+
+
+# AGGREGATE Method
+var result = db.twitter_sample.aggregate(
+    {   
+        $project: {
+            _id: 0,
+            "entities.user_mentions" : 1
+        }
+    },
+    {   $unwind: "$entities.user_mentions" },
+    {   
+        $group : {
+            _id: "$entities.user_mentions.screen_name",
+            count: { $sum : 1 }
+        }
+    },
+    {   
+        $sort : {
+            "count" : -1
+        }
+    }
+)
+
+
+
+
+
+
+# Most Hashed Tags
+# MAP-REDUCE Method
+var map = function() {
+    this.entities.hashtags.forEach(function(hashtag) {
+        emit(hashtag.text, { count: 1 });
+    })
+};
+
+var reduce = function(key, values) {
+    // NB: reduce() uses same format as results emitted by map()
+    var result = { count: 0 };
+
+    values.forEach(function(value) {
+        result.count += value.count;
+    });
+
+    return result;
+};
+
+result = db.runCommand({
+	"mapreduce" : "twitter_sample",
+	"map" : map,
+	"reduce" : reduce,
+	"out" : "hash_tags"
+});
+
+db.hash_tags.find({}).sort({ "value.count" : -1});
+
+
+
+# AGGREGATE Method
+var result = db.twitter_sample.aggregate(
+    {   
+        $project: {
+            _id: 0,
+            "entities.hashtags" : 1
+        }
+    },
+    {   $unwind: "$entities.hashtags"},
+    {   
+        $group : {
+            _id: "$entities.hashtags.text",
+            count: { $sum : 1 }
+        }
+    },
+    {   
+        $sort : {
+            "count" : -1
+        }
+    }
+)
+
+
+
+
+
+
+
+
+
+
+
+
+# Most Shared Link
+# MAP-REDUCE Method
+var map = function() {
+    this.entities.urls.forEach(function(url) {
+        emit(url.url, { count: 1 });
+    })
+};
+
+var reduce = function(key, values) {
+    // NB: reduce() uses same format as results emitted by map()
+    var result = { count: 0 };
+
+    values.forEach(function(value) {
+        result.count += value.count;
+    });
+
+    return result;
+};
+
+result = db.runCommand({
+    "mapreduce" : "twitter_sample",
+    "map" : map,
+    "reduce" : reduce,
+    "out" : "url"
+});
+
+db.url.find({}).sort({ "value.count" : -1});
+
+

@@ -12,6 +12,9 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import com.mongodb.DBCursor;
+
+import twitter4j.Tweet;
 import unittests.MongoDBUnitTests;
 import db.MongoDBAdaptor;
 import io.FileManager;
@@ -107,6 +110,31 @@ public class TestRunner
 		return new ArrayList<Float>(Arrays.asList(execution_time, objects));
 	}
 	
+	public ArrayList<Float> testQuery(File data_file) 
+	{
+		ArrayList<Float> find_res = new ArrayList<Float>();
+//		this.mongodb.objectTimeBucket();
+		
+		displayQueryResults(this.mongodb.mapReduceUserMentions());
+		displayQueryResults(this.mongodb.mapReduceHashTags());
+		displayQueryResults(this.mongodb.mapReduceSharedUrls()); 
+		
+		return find_res;
+	}
+	
+	public void displayQueryResults(DBCursor cur)
+	{
+		int count = 0;
+		int limit = 5;
+		while (cur.hasNext()) {
+			if (count != limit) 
+				System.out.println(cur.next().toString());
+			else
+				break;
+			count++;
+		}
+	}
+	
 	/**
 	 * Displays IOtest Results
 	 */
@@ -141,8 +169,9 @@ public class TestRunner
 		FileManager file_manager = new FileManager();
 		ArrayList<Float> insert_res = new ArrayList<Float>();
 		ArrayList<Float> remove_res = new ArrayList<Float>();
+		ArrayList<Float> find_res = new ArrayList<Float>();
+		
 		try {
-			
 			// prepare the database for testing first
 			prepDB();
 			
@@ -159,8 +188,8 @@ public class TestRunner
 			
 			// sleep for a bit before starting test
 			// 60000 ms -> 1 mins * 60 seconds * 1000ms
-			System.out.println("Sleeping for 1 mins!");
-			Thread.currentThread().sleep(60000); 
+//			System.out.println("Sleeping for 1 mins!");
+//			Thread.currentThread().sleep(60000); 
 			
 			// processing file
 			int num_lines = lineCount(file_path);
@@ -174,7 +203,11 @@ public class TestRunner
 				
 				System.out.println("Start test!");
 				insert_res = testIO(new File(file_path), line_limit, "insert");
+				find_res = testQuery(new File(file_path));
 				remove_res = testIO(new File(file_path), line_limit, "remove");
+				
+				
+				
 				
 				// calculate insert and remove per second
 				float objects = insert_res.get(1);
@@ -201,16 +234,16 @@ public class TestRunner
 				
 				// sleep for a bit before running the next test
 				// 300000 ms -> 5 mins * 60 seconds * 1000ms
-				System.out.println("Sleeping for 5 mins!");
-				Thread.currentThread().sleep(300000); 
-				System.out.println("Right time to wake up!");
+//				System.out.println("Sleeping for 5 mins!");
+//				Thread.currentThread().sleep(300000); 
+//				System.out.println("Right time to wake up!");
 			}
 		} catch (NullPointerException e) {
 			System.out.println("error: " + e);
 		} catch (IOException e) {
 			System.out.println("error: " + e);
-		} catch (InterruptedException e) {
-			System.out.println("error: " + e);
+//		} catch (InterruptedException e) {
+//			System.out.println("error: " + e);
 		} finally {
 			file_manager.closeFileWriter();
 		}

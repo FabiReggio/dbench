@@ -1,6 +1,6 @@
 package db;
 
-public interface IMongoDBAdaptor 
+public interface IDBAdaptor 
 {
     // --- Fields --- 
     public int status = 0; 

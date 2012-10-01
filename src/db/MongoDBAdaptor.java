@@ -2,43 +2,48 @@ package db;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 
 import twitter4j.Tweet;
 
+import com.mongodb.AggregationOutput;
+import com.mongodb.MapReduceCommand;
+import com.mongodb.MapReduceOutput;
 import com.mongodb.Mongo;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBCollection;
+import com.mongodb.QueryBuilder;
 import com.mongodb.util.JSON;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
 
-
-public class MongoDBAdaptor implements IMongoDBAdaptor 
-{
+public class MongoDBAdaptor implements IDBAdaptor {
 	// --- Fields ---
 	private Mongo mongodb;
 	private DB db;
-    private DBCollection collection;
-    private String db_name = "";
+	private DBCollection collection;
+	private String db_name = "";
 
 	// --- Constructor ---
 	public MongoDBAdaptor() {}
 
 	// --- Methods ---
-    /**
-     * Connect to MongoDB 
-     * @param db_host Hostname of MongoDB
-     * @param db_port Port of MongoDB
-     * @param db_name Database name to access in MongoDB
-     */
-	public boolean connect(String db_host, 
-			int db_port, 
-			String db_name) 
+	/**
+	 * Connect to MongoDBF
+	 * 
+	 * @param db_host
+	 *            Hostname of MongoDB
+	 * @param db_port
+	 *            Port of MongoDB
+	 * @param db_name
+	 *            Database name to access in MongoDB
+	 */
+	public boolean connect(String db_host, int db_port, String db_name) 
 	{
 		try {
 			this.mongodb = new Mongo(db_host, db_port);
@@ -54,19 +59,22 @@ public class MongoDBAdaptor implements IMongoDBAdaptor
 		return true;
 	}
 
-    /**
-     * Connect to MongoDB 
-     * @param db_host Hostname of MongoDB
-     * @param db_port Port of MongoDB
-     * @param db_username Username to access MongoDB
-     * @param db_password Password to access MongoDB
-     * @param db_name Database name to access in MongoDB
-     */
-	public boolean connect(String db_host, 
-			int db_port,
-			String db_username, 
-			char[] db_password, 
-			String db_name) 
+	/**
+	 * Connect to MongoDB
+	 * 
+	 * @param db_host
+	 *            Hostname of MongoDB
+	 * @param db_port
+	 *            Port of MongoDB
+	 * @param db_username
+	 *            Username to access MongoDB
+	 * @param db_password
+	 *            Password to access MongoDB
+	 * @param db_name
+	 *            Database name to access in MongoDB
+	 */
+	public boolean connect(String db_host, int db_port, String db_username,
+			char[] db_password, String db_name) 
 	{
 		try {
 			this.mongodb = new Mongo(db_host, db_port);
@@ -85,271 +93,411 @@ public class MongoDBAdaptor implements IMongoDBAdaptor
 		return true;
 	}
 
-    /**
-     * Disconnect from MongoDB 
-     */
+	/**
+	 * Disconnect from MongoDB
+	 */
 	public boolean disconnect() 
 	{
-	    this.mongodb.close();
-	    
-	    // double check connection is indeed closed
-	    try {
-            this.mongodb.getDatabaseNames();
-        } catch (MongoException e) {
-            return true;
-        }
-        return false;
+		this.mongodb.close();
+
+		// double check connection is indeed closed
+		try {
+			this.mongodb.getDatabaseNames();
+		} catch (MongoException e) {
+			return true;
+		}
+		return false;
 	}
 
-    /**
-     * Insert document 
-     * @param data JSON Data to be inserted
-     * @param collection Collection name to insert document 
-     */
-	public boolean insert(String data)
+	/**
+	 * Insert document
+	 * 
+	 * @param data
+	 *            JSON Data to be inserted
+	 * @param collection
+	 *            Collection name to insert document
+	 */
+	public boolean insert(String data) 
 	{
-	    try {
-	    	if (isCollectionSet()) {
-	            this.collection.insert((DBObject)JSON.parse(data));
-	            return true;
-	    	} else {
-	            System.out.println("error: collection hasn't been set yet");
-	    		return false;
-	    	}
-        } catch (MongoException e) {
-            System.out.println("error: " + e.toString());
-            return false;
-        }
+		try {
+			if (isCollectionSet()) {
+				this.collection.insert((DBObject) JSON.parse(data));
+				return true;
+			} else {
+				System.out.println("error: collection hasn't been set yet");
+				return false;
+			}
+		} catch (MongoException e) {
+			System.out.println("error: " + e.toString());
+			return false;
+		}
+	}
+
+	/**
+	 * Insert a list of documents
+	 * 
+	 * @param data
+	 *            ArrayList of String which contains JSON Data
+	 * @param collection
+	 *            Collection name to insert document
+	 */
+	public boolean insertBulk(ArrayList<String> data) 
+	{
+		try {
+			if (isCollectionSet()) {
+				for (String d : data)
+					this.collection.insert((DBObject) JSON.parse(d));
+				return true;
+			} else {
+				System.out.println("error: collection hasn't been set yet");
+				return false;
+			}
+		} catch (MongoException e) {
+			System.out.println("error: " + e.toString());
+			return false;
+		}
+	}
+
+	/**
+	 * Remove document
+	 * 
+	 * @param data
+	 *            JSON Data to be inserted
+	 * @param collection
+	 *            Collection name to remove document
+	 */
+	public boolean remove(String data) 
+	{
+		try {
+			if (isCollectionSet()) {
+				this.collection.remove((DBObject) JSON.parse(data));
+				return true;
+			} else {
+				System.out.println("error: collection hasn't been set yet");
+				return false;
+			}
+		} catch (MongoException e) {
+			System.out.println("error: " + e.toString());
+			return false;
+		}
+	}
+
+	/**
+	 * Remove all documents in collection
+	 */
+	public boolean removeAll() 
+	{
+		try {
+			if (isCollectionSet()) {
+				this.collection.remove(new BasicDBObject());
+				return true;
+			} else {
+				System.out.println("error: collection hasn't been set yet");
+				return false;
+			}
+		} catch (MongoException e) {
+			System.out.println("error: " + e.toString());
+			return false;
+		}
+	}
+
+	/**
+	 * Find documents - Object Method Test
+	 * 
+	 * @param query
+	 *            Query string
+	 * @return
+	 */
+	public void objectTimeBucket() 
+	{
+		// Key
+		DBObject key = new BasicDBObject();
+		
+		// Conditions
+		DBObject regex = new BasicDBObject("$regex", "Sun Aug 05 14:00:*");
+		DBObject cond = new BasicDBObject("created_at", regex);
+		
+		// Initial
+		DBObject initial = new BasicDBObject("sum", 0);
+		
+		// Reduce
+		String reduce_func = "function(doc, prev) {prev.sum += 1}";
+		
+		// Group Command
+		DBObject result = this.collection.group(
+				key,
+				cond,
+				initial,
+				reduce_func);
+	}
+
+	/**
+	 * Find Most User Mentioned by using Map Reduce 
+	 * @return
+	 */
+	public DBCursor mapReduceUserMentions() 
+	{
+		DBCollection user_mentions = this.db.getCollection("user_mentions");
+		System.out.println("User Mentions: " + user_mentions.count());
+		
+		String map = ""
+				+ "function() {"
+				+ "		this.entities.user_mentions.forEach("
+				+ "			function(mention) {"
+				+ "				emit(mention.screen_name, { count: 1 });" 
+				+ "			}"
+				+ "		)" 
+				+ "};";
+		String reduce = "" 
+				+ "function(key, values) {" 
+				+ "		var result = { count : 0 };" 
+				+ "		values.forEach(function(value) {" 
+				+ "				result.count += value.count;"
+				+ "		});"
+				+ "		return result;"
+				+ "};";
+		
+		MapReduceOutput output = this.collection.mapReduce(
+				map, 
+				reduce, 
+				"user_mentions",
+				null);
+		
+		BasicDBObject sort_by = new BasicDBObject("value.count", -1);
+		
+		return user_mentions.find(new BasicDBObject()).sort(sort_by);
 	}
 	
-    /**
-     * Insert a list of documents 
-     * @param data ArrayList of String which contains JSON Data 
-     * @param collection Collection name to insert document 
-     */
-	public boolean insertBulk(ArrayList<String> data)
+	/**
+	 * Finds the Most User Mentioned using the Aggregate Framework
+	 * @return Iterator of DBObject
+	 */
+	public Iterable<DBObject> aggregateUserMentions() 
 	{
-	    try {
-	    	if (isCollectionSet()) {
-	    		for (String d: data) 
-		            this.collection.insert((DBObject)JSON.parse(d));
-	            return true;
-	    	} else {
-	            System.out.println("error: collection hasn't been set yet");
-	    		return false;
-	    	}
-        } catch (MongoException e) {
-            System.out.println("error: " + e.toString());
-            return false;
-        }
+		// $project
+		DBObject keys = new BasicDBObject();
+		keys.put("_id", "0");
+		keys.put("entities.user_mentions", "1");
+		DBObject project = new BasicDBObject("$project", keys);
+		
+		// $unwind
+		DBObject unwind = new BasicDBObject(
+				"$unwind", 
+				"$entities.user_mentions");
+		
+		// $group
+		DBObject keys_2 = new BasicDBObject();
+		keys_2.put("_id", "$entities.user_mentions.screen_name");
+		keys_2.put("count", new BasicDBObject("$sum", 1));
+		DBObject group = new BasicDBObject("$group", keys_2);
+		
+		// $sort
+		DBObject sort = new BasicDBObject("count", -1);
+		
+		AggregationOutput out = this.collection.aggregate(
+				project,
+				unwind,
+				group,
+				sort);
+		return out.results();
 	}
-
-    /**
-     * Remove document 
-     * @param data JSON Data to be inserted
-     * @param collection Collection name to remove document 
-     */
-	public boolean remove(String data)
-    {
-	    try {
-	    	if (isCollectionSet()) {
-	            this.collection.remove((DBObject)JSON.parse(data));
-	            return true;
-	    	} else {
-	            System.out.println("error: collection hasn't been set yet");
-	    		return false;
-	    	}
-        } catch (MongoException e) {
-            System.out.println("error: " + e.toString());
-            return false;
-        }
-    }
-
-    /**
-     * Remove all documents in collection
-     */
-	public boolean removeAll()
-    {
-	    try {
-	    	if (isCollectionSet()) {
-	            this.collection.remove(new BasicDBObject());
-	            return true;
-	    	} else {
-	            System.out.println("error: collection hasn't been set yet");
-	    		return false;
-	    	}
-        } catch (MongoException e) {
-            System.out.println("error: " + e.toString());
-            return false;
-        }
-    }
-
-//	/**
-//	 * Builds a query to be used to find documents in MongoDB
-//	 * @param keys
-//	 * @param vals
-//	 * @param iconds
-//	 * @param oconds
-//	 * @return A query object
-//	 */
-//	public Object queryBuilder(
-//			ArrayList<String> keys,
-//			ArrayList<String> vals,
-//			ArrayList<String> iconds,
-//			ArrayList<String> oconds)
-//	{
-//    	BasicDBObject query = new BasicDBObject();
-//    	int size = keys.size();
-//    	
-//    	
-//    	for (int i = 0; i <= size; i++) {
-//    		if (iconds.get(i + 1).equals("=="))
-//    			query.put(keys.get(i), vals.get(i));
-//    		else if (iconds.get(i + 1).equals("<"))
-//    			query.put(keys.get(i), new BasicDBObject("$lt", vals.get(i)));
-//    		else if (iconds.get(i + 1).equals("<="))
-//    			query.put(keys.get(i), new BasicDBObject("$lte", vals.get(i)));
-//    		else if (iconds.get(i + 1).equals(">"))
-//    			query.put(keys.get(i), new BasicDBObject("$gt", vals.get(i)));
-//    		else if (iconds.get(i + 1).equals(">="))
-//    			query.put(keys.get(i), new BasicDBObject("$gte", vals.get(i)));
-//    		else if (iconds.get(i + 1).equals("!=")) 
-//    			query.put(keys.get(i), new BasicDBObject("$ne", vals.get(i)));
-//    		else if (iconds.get(i + 1).equals("&&")) 
-//    			query.put(keys.get(i), new BasicDBObject("$in", vals.get(i)));
-//    		else if (iconds.get(i + 1).equals("||")) 
-//    			query.put(keys.get(i), new BasicDBObject("$or", vals.get(i)));
-//    	}
-//    	
-//    	
-//    	
-//    	return query;
-//	}
-
 	
-//    /**
-//     * Find documents
-//     * @param query Query string
-//     * @param keys ArrayList of keys
-//     * @param values ArrayList of values
-//     * @param iconds ArrayList of inner conditions between key-value 
-//     * @param oconds ArrayList of outer conditions between key-value **pairs**
-//     * @return
-//     */
-//	public ArrayList<String> find(
-//			ArrayList<String> keys,
-//			ArrayList<String> values,
-//			ArrayList<String> iconds,
-//			ArrayList<String> oconds)
-//    {
-//		ArrayList<String> results = new ArrayList<String>();
-//	    try {
-//	    	BasicDBObject query;
-//	    	query = (BasicDBObject) queryBuilder(keys, values, iconds, oconds);
-//	    	DBCursor cursor = this.collection.find(query);
-//	    	while(cursor.hasNext()) {
-//	    	    results.add(cursor.next().toString());
-//	    	}
-//        } catch (MongoException e) {
-//            System.out.println("error: " + e.toString());
-//        }
-//		return results;
-//    }
-
-    /**
-     * Find documents - Jongo Method Test
-     * @return
-     */
-	public Iterable<Tweet> jongoFindTweets()
-    {
+	/**
+	 * Find Most Hased Tags by using Map Reduce 
+	 * @return
+	 */
+	public DBCursor mapReduceHashTags() 
+	{
+		String map = ""
+				+ "function() {"
+				+ "		this.entities.hashtags.forEach("
+				+ "			function(tag) {"
+				+ "				emit(tag.text, { count: 1 });" 
+				+ "			}"
+				+ "		)" 
+				+ "};";
+		String reduce = "" 
+				+ "function(key, values) {" 
+				+ "		var result = { count : 0 };" 
+				+ "		values.forEach(function(value) {" 
+				+ "				result.count += value.count;"
+				+ "		});"
+				+ "		return result;"
+				+ "};";
 		
-		Jongo jongo = new Jongo(this.mongodb.getDB(this.db_name));
-		MongoCollection collection = jongo.getCollection(getCollectionName());
+		MapReduceOutput output = this.collection.mapReduce(
+				map, 
+				reduce, 
+				"hash_tags",
+				null);
 		
-		Iterable<Tweet> tweets = collection.find(query).as(Tweet.class);
-		return tweets;
-    }
-
-    /**
-     * Find documents - Object Method Test
-     * @param query Query string
-     * @return
-     */
-	public Iterable<Tweet> objectFindTweets()
-    {
-		return tweets;
-    }
-
-    /**
-     * Find documents - QueryBuilder Method Test
-     * @param query Query string
-     * @return
-     */
-	public Iterable<Tweet> objectFindTweets()
-    {
-	    Iterable<Tweet> = this.collection.find(	
-		return tweets;
-    }
-
+		BasicDBObject sort_by = new BasicDBObject("value.count", -1);
+		DBCollection hash_tags = this.db.getCollection("hash_tags");
+		
+		return hash_tags.find().sort(sort_by);
+	}
+	
+	/**
+	 * Finds the Most Hash Tag using the Aggregate Framework
+	 * @return Iterator of DBObject
+	 */
+	public Iterable<DBObject> aggregateHashTags() 
+	{
+		// $project
+		DBObject keys = new BasicDBObject();
+		keys.put("_id", "0");
+		keys.put("entities.hashtags", "1");
+		DBObject project = new BasicDBObject("$project", keys);
+		
+		// $unwind
+		DBObject unwind = new BasicDBObject(
+				"$unwind", 
+				"$entities.hashtags");
+		
+		// $group
+		DBObject keys_2 = new BasicDBObject();
+		keys_2.put("_id", "$entities.hashtags.text");
+		keys_2.put("count", new BasicDBObject("$sum", 1));
+		DBObject group = new BasicDBObject("$group", keys_2);
+		
+		// $sort
+		DBObject sort = new BasicDBObject("count", -1);
+		
+		AggregationOutput out = this.collection.aggregate(
+				project,
+				unwind,
+				group,
+				sort);
+		return out.results();
+	}
+	
+	/**
+	 * Find Most Shared URL by using Map Reduce
+	 */
+	public DBCursor mapReduceSharedUrls() 
+	{
+		String map = ""
+				+ "function() {"
+				+ "		this.entities.urls.forEach("
+				+ "			function(url) {"
+				+ "				emit(url.url, { count: 1 });" 
+				+ "			}"
+				+ "		)" 
+				+ "};";
+		String reduce = "" 
+				+ "function(key, values) {" 
+				+ "		var result = { count : 0 };" 
+				+ "		values.forEach(function(value) {" 
+				+ "				result.count += value.count;"
+				+ "		});"
+				+ "		return result;"
+				+ "};";
+		
+		MapReduceOutput output = this.collection.mapReduce(
+				map, 
+				reduce, 
+				"urls",
+				null);
+		
+		BasicDBObject sort_by = new BasicDBObject("value.count", "-1");
+		return this.collection.find().sort(sort_by);
+	}
+	
+	/**
+	 * Finds the Most Share URL using the Aggregate Framework
+	 * @return Iterator of DBObject
+	 */
+	public Iterable<DBObject> aggregateSharedURL() 
+	{
+		// $project
+		DBObject keys = new BasicDBObject();
+		keys.put("_id", "0");
+		keys.put("entities.url", "1");
+		DBObject project = new BasicDBObject("$project", keys);
+		
+		// $unwind
+		DBObject unwind = new BasicDBObject(
+				"$unwind", 
+				"$entities.url");
+		
+		// $group
+		DBObject keys_2 = new BasicDBObject();
+		keys_2.put("_id", "$entities.url.url");
+		keys_2.put("count", new BasicDBObject("$sum", 1));
+		DBObject group = new BasicDBObject("$group", keys_2);
+		
+		// $sort
+		DBObject sort = new BasicDBObject("count", -1);
+		
+		AggregationOutput out = this.collection.aggregate(
+				project,
+				unwind,
+				group,
+				sort);
+		return out.results();
+	}
 	
 	/**
 	 * Checks to see if a MongoDB collection has been selected
+	 * 
 	 * @return True or False
 	 */
-    public boolean isCollectionSet()
-    {
-        if (this.collection != null 
-                && this.collection.getFullName().length() != 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
-    /**
-     * Add user to MongoDB
-     * @param db_user
-     * @param db_pass
-     */
-    public boolean addUser(String db_user, char[] db_pass)
-    {
-    	try {
-	    	this.db.addUser(db_user, db_pass);
-    	} catch (MongoException e){
-    		System.out.println("error: " + e);
-    		return false;
-    	}
-    	return true;
-    }
-    
-    /**
-     * Remove user from MongoDB
-     * @param db_user
-     */
-    public boolean removeUser(String db_user)
-    {
-    	try {
-	    	this.db.removeUser(db_user);
-    	} catch (MongoException e){
-    		System.out.println("error: " + e);
-    		return false;
-    	}
-    	return true;
-    }
+	public boolean isCollectionSet() 
+	{
+		if (this.collection != null
+				&& this.collection.getFullName().length() != 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-	// --- Setters and Getters --- 
-	public void setCollection(String collection_name)
-    {
-        if (this.db != null)
-            this.collection = this.db.getCollection(collection_name);
-    }
+	/**
+	 * Add user to MongoDB
+	 * 
+	 * @param db_user
+	 * @param db_pass
+	 */
+	public boolean addUser(String db_user, char[] db_pass) 
+	{
+		try {
+			this.db.addUser(db_user, db_pass);
+		} catch (MongoException e) {
+			System.out.println("error: " + e);
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Remove user from MongoDB
+	 * 
+	 * @param db_user
+	 */
+	public boolean removeUser(String db_user) 
+	{
+		try {
+			this.db.removeUser(db_user);
+		} catch (MongoException e) {
+			System.out.println("error: " + e);
+			return false;
+		}
+		return true;
+	}
+
+	// --- Setters and Getters ---
+	public void setCollection(String collection_name) 
+	{
+		if (this.db != null)
+			this.collection = this.db.getCollection(collection_name);
+	}
 
 	public String getCollectionName() 
-    {
-        return this.collection.getFullName();
-    }
-	
-	public long getCollectionCount()
+	{
+		return this.collection.getFullName();
+	}
+
+	public long getCollectionCount() 
 	{
 		return this.collection.count();
 	}
