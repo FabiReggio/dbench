@@ -9,12 +9,12 @@ import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
-import db.MongoDBAdaptor;
+import db.MongoDBClient;
 
 public class MongoDBUnitTests 
 {
 	// --- Fields ---
-	private MongoDBAdaptor mongodb;
+	private MongoDBClient mongodb;
 	private boolean bool;
 	private String db_host = "localhost";
 	private int db_port = 27017;
@@ -27,7 +27,7 @@ public class MongoDBUnitTests
 	@Before
     public void initMongoDB()
     {
-        this.mongodb = new MongoDBAdaptor();
+        this.mongodb = new MongoDBClient();
         this.bool = this.mongodb.connect(db_host, db_port, db_name);
         this.mongodb.setCollection(collection);
     }

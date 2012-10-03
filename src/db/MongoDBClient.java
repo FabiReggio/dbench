@@ -22,7 +22,7 @@ import com.mongodb.util.JSON;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
 
-public class MongoDBAdaptor implements IDBAdaptor {
+public class MongoDBClient implements IDBAdaptor {
 	// --- Fields ---
 	private Mongo mongodb;
 	private DB db;
@@ -30,7 +30,7 @@ public class MongoDBAdaptor implements IDBAdaptor {
 	private String db_name = "";
 
 	// --- Constructor ---
-	public MongoDBAdaptor() {}
+	public MongoDBClient() {}
 
 	// --- Methods ---
 	/**
@@ -208,13 +208,13 @@ public class MongoDBAdaptor implements IDBAdaptor {
 	 *            Query string
 	 * @return
 	 */
-	public void objectTimeBucket() 
+	public DBObject objectTimeBucket() 
 	{
 		// Key
 		DBObject key = new BasicDBObject();
 		
 		// Conditions
-		DBObject regex = new BasicDBObject("$regex", "Sun Aug 05 14:00:*");
+		DBObject regex = new BasicDBObject("$regex", "Tue Jul 24 13:35:*");
 		DBObject cond = new BasicDBObject("created_at", regex);
 		
 		// Initial
@@ -229,6 +229,7 @@ public class MongoDBAdaptor implements IDBAdaptor {
 				cond,
 				initial,
 				reduce_func);
+		return result;
 	}
 
 	/**
@@ -237,11 +238,9 @@ public class MongoDBAdaptor implements IDBAdaptor {
 	 */
 	public DBCursor mapReduceUserMentions() 
 	{
-		DBCollection user_mentions = this.db.getCollection("user_mentions");
-		System.out.println("User Mentions: " + user_mentions.count());
-		
 		String map = ""
 				+ "function() {"
+				+ "		if (!this.entities) { return; }"
 				+ "		this.entities.user_mentions.forEach("
 				+ "			function(mention) {"
 				+ "				emit(mention.screen_name, { count: 1 });" 
@@ -263,8 +262,8 @@ public class MongoDBAdaptor implements IDBAdaptor {
 				"user_mentions",
 				null);
 		
+		DBCollection user_mentions = this.db.getCollection("user_mentions");
 		BasicDBObject sort_by = new BasicDBObject("value.count", -1);
-		
 		return user_mentions.find(new BasicDBObject()).sort(sort_by);
 	}
 	
@@ -310,6 +309,7 @@ public class MongoDBAdaptor implements IDBAdaptor {
 	{
 		String map = ""
 				+ "function() {"
+				+ "		if (!this.entities) { return; }"
 				+ "		this.entities.hashtags.forEach("
 				+ "			function(tag) {"
 				+ "				emit(tag.text, { count: 1 });" 
@@ -331,9 +331,8 @@ public class MongoDBAdaptor implements IDBAdaptor {
 				"hash_tags",
 				null);
 		
-		BasicDBObject sort_by = new BasicDBObject("value.count", -1);
 		DBCollection hash_tags = this.db.getCollection("hash_tags");
-		
+		BasicDBObject sort_by = new BasicDBObject("value.count", -1);
 		return hash_tags.find().sort(sort_by);
 	}
 	
@@ -376,11 +375,13 @@ public class MongoDBAdaptor implements IDBAdaptor {
 	 */
 	public DBCursor mapReduceSharedUrls() 
 	{
+
 		String map = ""
 				+ "function() {"
+				+ "		if (!this.entities) { return; }"
 				+ "		this.entities.urls.forEach("
-				+ "			function(url) {"
-				+ "				emit(url.url, { count: 1 });" 
+				+ "			function(urls) {"
+				+ "				emit(urls.url, { count: 1 });" 
 				+ "			}"
 				+ "		)" 
 				+ "};";
@@ -396,11 +397,12 @@ public class MongoDBAdaptor implements IDBAdaptor {
 		MapReduceOutput output = this.collection.mapReduce(
 				map, 
 				reduce, 
-				"urls",
+				"shared_urls",
 				null);
 		
+		DBCollection shared_urls = this.db.getCollection("shared_urls");
 		BasicDBObject sort_by = new BasicDBObject("value.count", "-1");
-		return this.collection.find().sort(sort_by);
+		return shared_urls.find(new BasicDBObject()).sort(sort_by);
 	}
 	
 	/**
@@ -483,6 +485,11 @@ public class MongoDBAdaptor implements IDBAdaptor {
 			return false;
 		}
 		return true;
+	}
+	
+	public void dropCollection(String collection) 
+	{
+		this.collection.drop();
 	}
 
 	// --- Setters and Getters ---
