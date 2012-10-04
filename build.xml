@@ -75,7 +75,8 @@
 	<target name="compile" depends="-init,retrieve">
 		<javac includeantruntime="false"
 				srcdir="${srcdir}" 
-				destdir="${builddir}">
+                destdir="${builddir}"
+                debug="true">
 			<classpath refid="buildpath"/>
 		</javac>
 	</target>

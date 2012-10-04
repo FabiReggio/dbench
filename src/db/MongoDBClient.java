@@ -264,7 +264,7 @@ public class MongoDBClient implements IDBAdaptor {
 		
 		DBCollection user_mentions = this.db.getCollection("user_mentions");
 		BasicDBObject sort_by = new BasicDBObject("value.count", -1);
-		return user_mentions.find(new BasicDBObject()).sort(sort_by);
+		return user_mentions.find().sort(sort_by).limit(1000);
 	}
 	
 	/**
@@ -275,8 +275,8 @@ public class MongoDBClient implements IDBAdaptor {
 	{
 		// $project
 		DBObject keys = new BasicDBObject();
-		keys.put("_id", "0");
-		keys.put("entities.user_mentions", "1");
+		keys.put("_id", 0);
+		keys.put("entities.user_mentions", 1);
 		DBObject project = new BasicDBObject("$project", keys);
 		
 		// $unwind
@@ -291,13 +291,18 @@ public class MongoDBClient implements IDBAdaptor {
 		DBObject group = new BasicDBObject("$group", keys_2);
 		
 		// $sort
-		DBObject sort = new BasicDBObject("count", -1);
+		DBObject sort_by = new BasicDBObject("count", -1);
+		DBObject sort = new BasicDBObject("$sort", sort_by); 
+		
+		// $limit 
+		DBObject limit = new BasicDBObject("$limit", 1000);
 		
 		AggregationOutput out = this.collection.aggregate(
 				project,
 				unwind,
 				group,
-				sort);
+				sort,
+				limit);
 		return out.results();
 	}
 	
@@ -333,7 +338,7 @@ public class MongoDBClient implements IDBAdaptor {
 		
 		DBCollection hash_tags = this.db.getCollection("hash_tags");
 		BasicDBObject sort_by = new BasicDBObject("value.count", -1);
-		return hash_tags.find().sort(sort_by);
+		return hash_tags.find().sort(sort_by).limit(1000);
 	}
 	
 	/**
@@ -344,8 +349,8 @@ public class MongoDBClient implements IDBAdaptor {
 	{
 		// $project
 		DBObject keys = new BasicDBObject();
-		keys.put("_id", "0");
-		keys.put("entities.hashtags", "1");
+		keys.put("_id", 0);
+		keys.put("entities.hashtags", 1);
 		DBObject project = new BasicDBObject("$project", keys);
 		
 		// $unwind
@@ -360,13 +365,18 @@ public class MongoDBClient implements IDBAdaptor {
 		DBObject group = new BasicDBObject("$group", keys_2);
 		
 		// $sort
-		DBObject sort = new BasicDBObject("count", -1);
+		DBObject sort_by = new BasicDBObject("count", -1);
+		DBObject sort = new BasicDBObject("$sort", sort_by); 
+		
+		// $limit 
+		DBObject limit = new BasicDBObject("$limit", 1000);
 		
 		AggregationOutput out = this.collection.aggregate(
 				project,
 				unwind,
 				group,
-				sort);
+				sort,
+				limit);
 		return out.results();
 	}
 	
@@ -375,13 +385,12 @@ public class MongoDBClient implements IDBAdaptor {
 	 */
 	public DBCursor mapReduceSharedUrls() 
 	{
-
 		String map = ""
 				+ "function() {"
 				+ "		if (!this.entities) { return; }"
 				+ "		this.entities.urls.forEach("
 				+ "			function(urls) {"
-				+ "				emit(urls.url, { count: 1 });" 
+				+ "				emit(urls.expanded_url, { count: 1 });" 
 				+ "			}"
 				+ "		)" 
 				+ "};";
@@ -401,41 +410,46 @@ public class MongoDBClient implements IDBAdaptor {
 				null);
 		
 		DBCollection shared_urls = this.db.getCollection("shared_urls");
-		BasicDBObject sort_by = new BasicDBObject("value.count", "-1");
-		return shared_urls.find(new BasicDBObject()).sort(sort_by);
+		BasicDBObject sort_by = new BasicDBObject("value.count", -1);
+		return shared_urls.find().sort(sort_by).limit(1000);
 	}
 	
 	/**
 	 * Finds the Most Share URL using the Aggregate Framework
 	 * @return Iterator of DBObject
 	 */
-	public Iterable<DBObject> aggregateSharedURL() 
+	public Iterable<DBObject> aggregateSharedUrls() 
 	{
 		// $project
 		DBObject keys = new BasicDBObject();
-		keys.put("_id", "0");
-		keys.put("entities.url", "1");
+		keys.put("_id", 0);
+		keys.put("entities.urls", 1);
 		DBObject project = new BasicDBObject("$project", keys);
 		
 		// $unwind
 		DBObject unwind = new BasicDBObject(
 				"$unwind", 
-				"$entities.url");
+				"$entities.urls");
 		
 		// $group
 		DBObject keys_2 = new BasicDBObject();
-		keys_2.put("_id", "$entities.url.url");
+		keys_2.put("_id", "$entities.urls.expanded_url");
 		keys_2.put("count", new BasicDBObject("$sum", 1));
 		DBObject group = new BasicDBObject("$group", keys_2);
 		
 		// $sort
-		DBObject sort = new BasicDBObject("count", -1);
+		DBObject sort_by = new BasicDBObject("count", -1);
+		DBObject sort = new BasicDBObject("$sort", sort_by); 
+		
+		// $limit 
+		DBObject limit = new BasicDBObject("$limit", 1000);
 		
 		AggregationOutput out = this.collection.aggregate(
 				project,
 				unwind,
 				group,
-				sort);
+				sort,
+				limit);
 		return out.results();
 	}
 	

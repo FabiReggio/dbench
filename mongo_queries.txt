@@ -56,7 +56,7 @@ db.user_mentions.find({}).sort({ "value.count" : -1});
 
 
 # AGGREGATE Method
-var result = db.twitter_sample.aggregate(
+var result = db.query_test_collection.aggregate(
     {   
         $project: {
             _id: 0,
@@ -74,7 +74,8 @@ var result = db.twitter_sample.aggregate(
         $sort : {
             "count" : -1
         }
-    }
+    },
+    {   $limit : 1000 }
 )
 
 
@@ -148,8 +149,9 @@ var result = db.twitter_sample.aggregate(
 # Most Shared Link
 # MAP-REDUCE Method
 var map = function() {
+    if (!this.entities) { return; }
     this.entities.urls.forEach(function(url) {
-        emit(url.url, { count: 1 });
+        emit(url.expanded_url, { count: 1 });
     })
 };
 
@@ -165,7 +167,7 @@ var reduce = function(key, values) {
 };
 
 result = db.runCommand({
-    "mapreduce" : "twitter_sample",
+    "mapreduce" : "query_test_collection",
     "map" : map,
     "reduce" : reduce,
     "out" : "url"
@@ -173,4 +175,50 @@ result = db.runCommand({
 
 db.url.find({}).sort({ "value.count" : -1});
 
+
+# AGGREGATE Method
+var result = db.query_test_collection.aggregate(
+    {   
+        $project: {
+            _id: 0,
+            "entities.urls" : 1
+        }
+    },
+    {   $unwind: "$entities.urls"},
+    {   
+        $group : {
+            _id: "$entities.urls.expanded_url",
+            count: { $sum : 1 }
+        }
+    },
+    {   
+        $sort : {
+            "count" : -1
+        }
+    },
+    {   $limit : 5 }
+)
+
+
+
+
+
+# INDEXING QUERIES
+# time bucket 
+db.query_test_collection.ensureIndex({ "created_at" : 1 })
+
+# most user mentions
+db.query_test_collection.ensureIndex({ 
+    "entities.user_mentions.screen_name" : 1 
+})
+
+# most hash tags 
+db.query_test_collection.ensureIndex({ 
+    "entities.hash_tags.text" : 1 
+})
+
+# most shared urls 
+db.query_test_collection.ensureIndex({ 
+    "entities.urls.expanded_url" : 1 
+})
 
