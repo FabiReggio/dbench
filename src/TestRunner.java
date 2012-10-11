@@ -55,7 +55,8 @@ public class TestRunner
 	// --- Main ---
 	public static void main(String[] argv) {
 		String db_name = "db_tests";
-		String db_host = "project06.cs.st-andrews.ac.uk";
+		String db_host1 = "project06.cs.st-andrews.ac.uk";
+		String db_host2 = "project07.cs.st-andrews.ac.uk";
 		int db_port = 27017;
 		
 		String io_col = "io_test_collection";
@@ -64,18 +65,19 @@ public class TestRunner
 		String t2 = "/datadisk1/home/chris/twitter_data/100meters.json.test";
 		String t3 = "/datadisk1/userContent/olympics3.jsonl";
 		
-		DBDetails io_test = new DBDetails(db_host, db_port, db_name, io_col);
-		DBDetails query_test = new DBDetails(db_host, db_port, db_name, q_col);
+//		DBDetails host_1 = new DBDetails(db_host1, db_port, db_name, q_col);
+		DBDetails host = new DBDetails(db_host2, db_port, db_name, q_col);
 
 		TestRunner tr = new TestRunner();
-		IOTests io_tests = new IOTests(io_test);
-		QueryTests query_tests = new QueryTests(query_test);
+//		IOTests io_tests = new IOTests(io_test);
+		QueryTests query_test = new QueryTests(host);
 		
-		for (int i: tr.range(1, 6)) { // repeat 5 times
-			System.out.println("Run number: " + Integer.toString(i));
-			System.out.println("--------------------------------------------");
-//			io_tests.run(t2, "io_results_" + i + ".dat", 10);
-			query_tests.run("query_results_" + i + ".dat");
-		}
+		query_test.addKeywordField();
+		
+//		for (int i: tr.range(1, 6)) { // repeat 5 times
+//			System.out.println("Run number: " + Integer.toString(i));
+//			System.out.println("--------------------------------------------");
+//			query_test_host2.run("project_07_query_results_" + i + ".dat");
+//		}
 	}
 }

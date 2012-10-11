@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import org.bson.types.ObjectId;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 
@@ -256,7 +257,7 @@ public class MongoDBClient implements IDBAdaptor {
 				+ "		return result;"
 				+ "};";
 		
-		MapReduceOutput output = this.collection.mapReduce(
+		this.collection.mapReduce(
 				map, 
 				reduce, 
 				"user_mentions",
@@ -330,7 +331,7 @@ public class MongoDBClient implements IDBAdaptor {
 				+ "		return result;"
 				+ "};";
 		
-		MapReduceOutput output = this.collection.mapReduce(
+		this.collection.mapReduce(
 				map, 
 				reduce, 
 				"hash_tags",
@@ -403,7 +404,7 @@ public class MongoDBClient implements IDBAdaptor {
 				+ "		return result;"
 				+ "};";
 		
-		MapReduceOutput output = this.collection.mapReduce(
+		this.collection.mapReduce(
 				map, 
 				reduce, 
 				"shared_urls",
@@ -451,6 +452,74 @@ public class MongoDBClient implements IDBAdaptor {
 				sort,
 				limit);
 		return out.results();
+	}
+
+	/**
+	 * Simply adds a new field but no values to all documents in collection
+	 * Method supports several different types of fields:
+	 * - NUMBER
+	 * - TEXT
+	 * - ARRAY
+	 * @param field_name
+	 * @param field_type
+	 * 		Field type, can be "NUMBER", "TEXT" or "ARRAY"
+	 * @return status
+	 */
+	public boolean addNewFieldToCollection(String field_name, String field_type) 
+    {
+		DBObject new_field;
+		
+		if (isCollectionSet() == false) return false;
+		
+		if (field_type.equals("NUMBER"))
+			new_field = new BasicDBObject(field_name, 0);
+		else if (field_type.equals("TEXT"))
+			new_field = new BasicDBObject(field_name, "empty");
+		else if (field_type.equals("ARRAY"))
+			new_field = new BasicDBObject(field_name, new ArrayList<Object>());
+		else 
+			return false;
+		
+		this.collection.updateMulti(new BasicDBObject(), new_field);
+        return true;
+    }
+	
+	/**
+	 * Make _keyword field for faster quering
+	 */
+	public boolean addKeywordField(String target_field)
+	{
+		boolean outcome = true;
+		String text = new String();
+		
+		if (isCollectionSet() == false) return false;
+		
+		// add new field to every document in collection
+		this.addNewFieldToCollection("_keyword", "ARRAY");
+	
+		// update _keyword field array in every doc in collection
+		for(DBObject obj : this.collection.find(new BasicDBObject())) {
+			if (obj.containsField(target_field)) {
+				text = obj.get(target_field).toString();
+				
+				// for one or more of either a whitespace or punctuation SPLIT!
+				String[] text_split = text.split("([.,!?:;'\"-#@]|\\s)+");
+				
+				// create the id 
+				ObjectId obj_id = new ObjectId(obj.get("_id").toString());
+				DBObject id = new BasicDBObject("_id", obj_id);
+				
+				// updated object with new _keyword field
+				DBObject updated_obj =  obj;
+				obj.put("_keword", text_split);
+				
+				// update and index _keyword
+				this.collection.update(id, updated_obj);
+				this.collection.ensureIndex(new BasicDBObject("_keyword", 1));
+			}
+		}
+		
+		return outcome;
 	}
 	
 	/**

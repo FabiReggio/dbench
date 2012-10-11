@@ -51,7 +51,7 @@ public class QueryTests extends DBTests {
 	 * Displays the results returned from aggregate queries
 	 * @param cur
 	 */
-	public void displayAggregateQueryResults(Iterable<DBObject> iter)
+	public void displayAggreQueryResults(Iterable<DBObject> iter)
 	{
 		int count = 0;
 		int limit = 6;
@@ -78,16 +78,16 @@ public class QueryTests extends DBTests {
 	{
 		System.out.println("-------------- Results -----------------");
 		System.out.printf("objects queried: %d \n", objects);
-		System.out.printf("time bucket execution time: %f ms \n", time_bucket);
+		System.out.printf("time bucket execution time: %f mins \n", time_bucket);
 		System.out.printf("total tweets in bucket: %s \n", total_tweets);
 		System.out.println("-------------- Map-Reduce ---------------");
-		System.out.printf("user mentions time: %f ms \n", user_mentions_mptime);
-		System.out.printf("hash tags time: %f ms \n", hash_tags_mptime);
-		System.out.printf("shared urls time: %f ms \n", shared_urls_mptime);
+		System.out.printf("user mentions time: %f mins \n", user_mentions_mptime);
+		System.out.printf("hash tags time: %f mins \n", hash_tags_mptime);
+		System.out.printf("shared urls time: %f mins \n", shared_urls_mptime);
 		System.out.println("----------- Aggregate Framework ---------");
-		System.out.printf("user mentions time: %f ms \n", user_mentions_atime);
-		System.out.printf("hash tags time: %f ms \n", hash_tags_atime);
-		System.out.printf("shared urls time: %f ms \n", shared_urls_atime);
+		System.out.printf("user mentions time: %f mins \n", user_mentions_atime);
+		System.out.printf("hash tags time: %f mins \n", hash_tags_atime);
+		System.out.printf("shared urls time: %f mins \n", shared_urls_atime);
 		System.out.println("----------------------------------------");
 	}
 	
@@ -114,32 +114,32 @@ public class QueryTests extends DBTests {
 		start_time = System.currentTimeMillis();
 		switch(mode) {
 			case 1:
-				this.mongodb.mapReduceUserMentions();
+				displayMPQueryResults(this.mongodb.mapReduceUserMentions());
 				break;
 			case 2:
-				this.mongodb.mapReduceHashTags();
+				displayMPQueryResults(this.mongodb.mapReduceHashTags());
 				break;
 			case 3:
-				this.mongodb.mapReduceSharedUrls();
+				displayMPQueryResults(this.mongodb.mapReduceSharedUrls());
 				break;
 		}
-		results.add(System.currentTimeMillis() - start_time);
+		results.add((System.currentTimeMillis() - start_time) / 60000);
 		
 		// aggregate method
 		System.out.println("aggregate framework method");
 		start_time = System.currentTimeMillis();
 		switch(mode) {
 			case 1:
-				this.mongodb.aggregateUserMentions();
+				displayAggreQueryResults(this.mongodb.aggregateUserMentions());
 				break;
 			case 2:
-				this.mongodb.aggregateHashTags();
+				displayAggreQueryResults(this.mongodb.aggregateHashTags());
 				break;
 			case 3:
-				this.mongodb.aggregateSharedUrls();
+				displayAggreQueryResults(this.mongodb.aggregateSharedUrls());
 				break;
 		}
-		results.add(System.currentTimeMillis() - start_time);
+		results.add((System.currentTimeMillis() - start_time) / 60000);
 		System.out.printf("\n\n");
 		
 		return results;
@@ -223,5 +223,14 @@ public class QueryTests extends DBTests {
 		file_manager.closeFileWriter();
 	}
 	
+	/**
+	 * 
+	 * 
+	 */
+	public void addKeywordField()
+	{
+		this.mongodb = this.prepDB();
+		this.mongodb.addKeywordField("text");
+	}
 
 }
