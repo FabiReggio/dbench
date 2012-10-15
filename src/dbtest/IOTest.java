@@ -29,6 +29,7 @@ public class IOTest extends DBTest
 	public IOTest (DBDetails db_details)
 	{
 		super(db_details);
+		this.mongodb = prepDB();
 	}
 	
 	// --- Methods ---
@@ -88,8 +89,7 @@ public class IOTest extends DBTest
 					if (mode.equals("insert"))
 						this.mongodb.insert(line);
 					else if (mode.equals("remove"))
-//						this.mongodb.remove(line);
-						this.mongodb.removeAll();
+						this.mongodb.remove(line);
 					objects += 1;
 				}
 				line_number += 1;
@@ -109,7 +109,7 @@ public class IOTest extends DBTest
 	 * - insert time per JSON object
 	 * - remove time per JSON object 
 	 * 
-	 * @param file_path
+	 * @param data_file
 	 * 			Data file path
 	 * @param res_path 
 	 * 			Results file path
@@ -118,7 +118,7 @@ public class IOTest extends DBTest
 	 * 			e.g. when slice is 5, that means there will be 5 increments
 	 * 			starting initially at 20%, 40%, 60%... and finishing at 100%	
 	 */
-	public void run(String fp, String res_path, int slice) 
+	public void test(String data_file, String res_path, int slice) 
 	{
 		FileManager file_manager = new FileManager();
 		ArrayList<Float> insert_res = new ArrayList<Float>();
@@ -126,12 +126,11 @@ public class IOTest extends DBTest
 		
 		try {
 			// prepare 
-			this.mongodb = prepDB("NORMAL");
 			prepResultsFile(file_manager, res_path, this.io_test_header);
 			
 			// process data file
-			int num_lines = lineCount(fp);
-			System.out.println("processing file: " + fp);
+			int num_lines = lineCount(data_file);
+			System.out.println("processing file: " + data_file);
 			System.out.println("number of lines: " + num_lines);
 			
 			// perform test at different percentile grades
@@ -143,7 +142,7 @@ public class IOTest extends DBTest
 				
 				// INSERT
 				System.out.println("performing insert");
-				insert_res = timeIO(fp, line_limit, "insert");
+				insert_res = timeIO(data_file, line_limit, "insert");
 				
 				// FSYNC (by sleeping for 2 minutes for good measure)
 				System.out.println("sleep for 2 minutes");
@@ -151,7 +150,7 @@ public class IOTest extends DBTest
 				
 				// REMOVE
 				System.out.println("performing remove all");
-				remove_res = timeIO(fp, line_limit, "remove");
+				remove_res = timeIO(data_file, line_limit, "remove");
 				
 				// calculate insert and remove per second
 				float objects = insert_res.get(1);
@@ -184,7 +183,21 @@ public class IOTest extends DBTest
 			System.out.println("error: " + e);
 		} finally {
 			file_manager.closeFileWriter();
-			closeDB();
+			this.mongodb.disconnect();
+		}
+	}
+	
+	/**
+	 * Execute the test
+	 * @param res_path
+	 * @param repeat
+	 */
+	public void run(String data_file, String res_path, int repeat, int slice) 
+	{
+		for (int i = 0; i <= repeat; i++) {
+			this.test(data_file, 
+					res_path + "io_results_" + (i + 1) + ".csv",
+					slice);
 		}
 	}
 }

@@ -8,16 +8,15 @@ import com.mongodb.DBObject;
 
 import io.FileManager;
 import db.DBDetails;
+import db.mongodb.MongoDBClient;
 import db.mongodb.MongoDBTweetAggregation;
 
 public class AggregationTest extends DBTest 
 {
 	// --- Fields ---
 	private MongoDBTweetAggregation mongodb;
-	private String[] query_test_header = {
+	private String[] results_header = {
 				"objects",
-				"time bucket",
-				"total tweets in bucket",
 				"user mentions (mp)",
 				"hash tags (mp)",
 				"shared urls (mp)",
@@ -30,6 +29,8 @@ public class AggregationTest extends DBTest
 	public AggregationTest(DBDetails db_details)
 	{
 		super(db_details);
+		MongoDBClient client = prepDB();
+		this.mongodb = new MongoDBTweetAggregation(client);
 	}
 	
 	// --- Methods ---
@@ -66,10 +67,8 @@ public class AggregationTest extends DBTest
 	/**
 	 * Displays summary of query test results
 	 */
-	public void displaySummaryQueryResults(
+	public void displaySummaryResults(
 			long objects,
-			float time_bucket,
-			String total_tweets,
 			float user_mentions_mptime,
 			float hash_tags_mptime,
 			float shared_urls_mptime,
@@ -79,8 +78,6 @@ public class AggregationTest extends DBTest
 	{
 		System.out.println("-------------- Results -----------------");
 		System.out.printf("objects queried: %d \n", objects);
-		System.out.printf("time bucket execution time: %f mins \n", time_bucket);
-		System.out.printf("total tweets in bucket: %s \n", total_tweets);
 		System.out.println("-------------- Map-Reduce ---------------");
 		System.out.printf("user mentions time: %f mins \n", user_mentions_mptime);
 		System.out.printf("hash tags time: %f mins \n", hash_tags_mptime);
@@ -92,9 +89,8 @@ public class AggregationTest extends DBTest
 		System.out.println("----------------------------------------");
 	}
 	
-	
 	/**
-	 * Executes the query tests, it performs both Map-Reduce queries and
+	 * Performs the aggregation, it performs both Map-Reduce queries and
 	 * Aggregate Framework queries.
 	 * @param mode
 	 * 		mode = 1: queries most user mentioned
@@ -104,7 +100,7 @@ public class AggregationTest extends DBTest
 	 * 		ArrayList of Long, containing both Map-Reduce and Aggregate
 	 * 		Framework execution time.
 	 */
-	public ArrayList<Long> executeTest(int mode) 
+	public ArrayList<Long> executeAggregation(int mode) 
 	{
 		ArrayList<Long> results = new ArrayList<Long>();
 		long start_time = 0;
@@ -153,48 +149,35 @@ public class AggregationTest extends DBTest
 	 * WARNING: We assume there are already data in the database to query
 	 * @return
 	 */
-	public void run(String res_path) 
+	public void test(String res_path) 
 	{
 		FileManager file_manager = new FileManager();
 
-		float start_time = 0;
 		long objects = 0; // number of objects in collection
-		float tb_time = 0;
-		String total_tweets = ""; // sum of tweets 
 		ArrayList<Long> user_mentions_results = new ArrayList<Long>();
 		ArrayList<Long> hash_tags_results = new ArrayList<Long>();
 		ArrayList<Long> shared_urls_results = new ArrayList<Long>();
 		
 		// prepare 
-		this.mongodb = prepDB("AGGREGATION");
-		prepResultsFile(file_manager, res_path, this.query_test_header);
+		prepResultsFile(file_manager, res_path, this.results_header);
 		objects = this.mongodb.getCollectionCount();
 		
 		// run tests
-		// TIME BUCKET
-		System.out.println("querying time bucket");
-		start_time = System.currentTimeMillis();
-		DBObject obj = this.mongodb.objectTimeBucket();
-		tb_time = System.currentTimeMillis() - start_time;
-		total_tweets = ((BasicBSONObject) obj.get("0")).get("sum").toString();
-		
 		// USER MENTIONS
 		System.out.println("USER MENTIONS");
-		user_mentions_results = executeTest(1);
+		user_mentions_results = executeAggregation(1);
 		
 		// HASH TAGS
 		System.out.println("HASH TAGS");
-		hash_tags_results = executeTest(2);
+		hash_tags_results = executeAggregation(2);
 		
 		// SHARED URLS
 		System.out.println("SHARED URLS");
-		shared_urls_results = executeTest(3);
+		shared_urls_results = executeAggregation(3);
 		
 		// display results
-		displaySummaryQueryResults(
+		displaySummaryResults(
 				objects,
-				tb_time,
-				total_tweets,
 				user_mentions_results.get(0),
 				hash_tags_results.get(0),
 				shared_urls_results.get(0),
@@ -207,8 +190,6 @@ public class AggregationTest extends DBTest
 		// log results
 		String[] csv_line = {
 				Long.toString(objects), // number of objects in collection
-				Float.toString(tb_time), // time bucket execution time 
-				total_tweets, // sum of time_bucket
 				// map reduce
 				Float.toString(user_mentions_results.get(0)),
 				Float.toString(hash_tags_results.get(0)),
@@ -225,13 +206,24 @@ public class AggregationTest extends DBTest
 	}
 	
 	/**
-	 * 
-	 * 
+	 * Execute the test
+	 * @param res_path
+	 * @param repeat
+	 */
+	public void run(String res_path, int repeat) 
+	{
+		for (int i = 0; i <= repeat; i++) {
+			System.out.println("Run number: " + Integer.toString(i));
+			this.test(res_path + "aggre_results_" + (i + 1) + ".csv");
+		}
+	}
+	
+	/**
+	 * Adds a new keyword field called "_keywords" to all documents in 
+	 * collection
 	 */
 	public void addKeywordField()
 	{
-		this.mongodb = this.prepDB();
 		this.mongodb.addKeywordField("text");
 	}
-
 }

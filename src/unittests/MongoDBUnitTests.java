@@ -5,11 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.mongodb.DB;
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
-
-import db.MongoDBClient;
+import db.mongodb.MongoDBClient;
 
 public class MongoDBUnitTests 
 {

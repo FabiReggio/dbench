@@ -9,53 +9,27 @@ import java.io.InputStream;
 
 import db.DBDetails;
 import db.mongodb.MongoDBClient;
-import db.mongodb.MongoDBTweetAggregation;
-import db.mongodb.MongoDBTweetFind;
 
 public class DBTest
 {
 	// --- Fields ---
-	private Object mongodb;
-	private String db_host = "";
-	private int db_port = 0;
-	private String db_name = "";
-	private String db_collection = "";
-
+	private DBDetails db_details;
+	
 	// --- Constructors ---
-	public DBTest(DBDetails db_details)
+	public DBTest(DBDetails db_details) 
 	{
-		this.db_host = db_details.getDBHost();
-		this.db_port = db_details.getDBPort();
-		this.db_name = db_details.getDBName();
-		this.db_collection = db_details.getDBCollection();
+		this.db_details = db_details;
 	}
 	
 	// --- Methods ---	
-	/**
-	 * Prepare database for tests
-	 */
-	public Object prepDB(String type) {
-        if (type.equals("NORMAL"))
-            this.mongodb = new MongoDBClient();
-			this.mongodb.connect(this.db_host, this.db_port, this.db_name);
-			this.mongodb.setCollection(this.db_collection);
-        else if (type.equals("AGGREGATION")) 
-            this.mongodb = new MongoDBTweetAggregation();
-			this.mongodb.connect(this.db_host, this.db_port, this.db_name);
-			this.mongodb.setCollection(this.db_collection);
-        else if (type.equals("FIND")) 
-            this.mongodb = new MongoDBTweetFind();
-			this.mongodb.connect(this.db_host, this.db_port, this.db_name);
-			this.mongodb.setCollection(this.db_collection);
-		return this.mongodb;
-	}
-	
-	/**
-	 * Disconnect database
-	 */
-	public void closeDB()
-	{
-		this.mongodb.disconnect();
+	public MongoDBClient prepDB() {
+		MongoDBClient mongodb = new MongoDBClient();
+		mongodb.connect(
+				this.db_details.getDBHost(), 
+				this.db_details.getDBPort(), 
+				this.db_details.getDBName());
+		mongodb.setCollection(this.db_details.getDBCollection());
+		return mongodb;
 	}
 	
 	/**

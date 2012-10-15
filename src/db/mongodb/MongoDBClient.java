@@ -2,23 +2,13 @@ package db.mongodb;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
-import org.jongo.Jongo;
-import org.jongo.MongoCollection;
 
-import twitter4j.Tweet;
-
-import com.mongodb.AggregationOutput;
-import com.mongodb.MapReduceCommand;
-import com.mongodb.MapReduceOutput;
 import com.mongodb.Mongo;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
-import com.mongodb.DBCursor;
 import com.mongodb.DBCollection;
-import com.mongodb.QueryBuilder;
 import com.mongodb.util.JSON;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
@@ -333,6 +323,11 @@ public class MongoDBClient implements IDBAdaptor
 		if (this.db != null)
 			this.collection = this.db.getCollection(collection_name);
 	}
+	
+	public DBCollection getCollection() 
+	{
+		return this.collection;
+	}
 
 	public String getCollectionName() 
 	{
@@ -343,5 +338,14 @@ public class MongoDBClient implements IDBAdaptor
 	{
 		return this.collection.count();
 	}
-
+	
+	public DB getDB() 
+	{
+		return this.mongodb.getDB(this.db_name);
+	}
+	
+	public String getDBName() 
+	{
+		return this.db_name;
+	}
 }

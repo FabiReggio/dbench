@@ -7,47 +7,22 @@ import com.mongodb.DBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DB;
 
-public class MongoDBTweetAggregation extends MongoDBClient 
+public class MongoDBTweetAggregation 
 {
 	// --- Fields ---
-	private DB db;
+	private MongoDBClient mongodb;
 	private DBCollection collection;
+	private DB db;
 	
 	// --- Constructors ---
-	public MongoDBTweetAggregation() {}
-
-	// --- Methods ---
-	/**
-	 * Find documents - Object Method Test
-	 * 
-	 * @param query
-	 *            Query string
-	 * @return
-	 */
-	public DBObject objectTimeBucket() 
+	public MongoDBTweetAggregation(MongoDBClient mongodb) 
 	{
-		// Key
-		DBObject key = new BasicDBObject();
-		
-		// Conditions
-		DBObject regex = new BasicDBObject("$regex", "Tue Jul 24 13:35:*");
-		DBObject cond = new BasicDBObject("created_at", regex);
-		
-		// Initial
-		DBObject initial = new BasicDBObject("sum", 0);
-		
-		// Reduce
-		String reduce_func = "function(doc, prev) {prev.sum += 1}";
-		
-		// Group Command
-		DBObject result = this.collection.group(
-				key,
-				cond,
-				initial,
-				reduce_func);
-		return result;
+		this.mongodb = mongodb;
+		this.collection = mongodb.getCollection();
+		this.db = mongodb.getDB();
 	}
 
+	// --- Methods ---
 	/**
 	 * Find Most User Mentioned by using Map Reduce 
 	 * @return
@@ -267,5 +242,24 @@ public class MongoDBTweetAggregation extends MongoDBClient
 				sort,
 				limit);
 		return out.results();
+	}
+	
+	/**
+	 * Returns the number of documents in collection 
+	 */
+	public long getCollectionCount() 
+	{
+		return this.mongodb.getCollectionCount();
+	}
+	
+	/**
+	 * Adds a new keyword field called "_keywords" to all documents in collection
+	 * The reason for this is to test if search through array containing the keywords is 
+	 * faster than using REGEX as full text search in MongoDB
+	 * 
+	 */
+	public void addKeywordField(String target)
+	{
+		this.mongodb.addKeywordField(target);
 	}
 }

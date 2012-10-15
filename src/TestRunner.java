@@ -74,7 +74,6 @@ public class TestRunner
 		
 		
 //		for (int i: tr.range(1, 6)) { // repeat 5 times
-//			System.out.println("Run number: " + Integer.toString(i));
 //			System.out.println("--------------------------------------------");
 //			query_test_host2.run("project_07_query_results_" + i + ".dat");
 //		}

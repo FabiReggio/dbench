@@ -1,26 +1,31 @@
 package db.mongodb;
 
-import com.mongodb.DBObject;
+import io.FileManager;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
-public class MongoDBTweetFind extends MongoDBClient 
+public class MongoDBTweetFind 
 {
 	// --- Fields ---
+	private MongoDBClient mongodb;
 	private DBCollection collection;
 	
 	// --- Constructors ---
-	public MongoDBTweetFind() {}
+	public MongoDBTweetFind(MongoDBClient mongodb){
+		this.mongodb = mongodb;
+		this.collection = mongodb.getCollection();
+	}
 
 	// --- Methods ---
 	/**
 	 * Find documents - Object Method Test
-	 * 
 	 * @param query
 	 *            Query string
 	 * @return
 	 */
-	public DBObject objectTimeBucket() 
+	public DBObject timeBucket() 
 	{
 		// Key
 		DBObject key = new BasicDBObject();
@@ -42,5 +47,10 @@ public class MongoDBTweetFind extends MongoDBClient
 				initial,
 				reduce_func);
 		return result;
+	}
+	
+	public long getCollectionCount() 
+	{
+		return this.collection.getCount();
 	}
 }
