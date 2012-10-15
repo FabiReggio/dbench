@@ -6,8 +6,8 @@ import unittests.MongoDBUnitTests;
 
 import db.DBDetails;
 import db.MongoDBClient;
-import dbtests.IOTests;
-import dbtests.QueryTests;
+import dbtest.IOTest;
+import dbtest.AggregationTest;
 
 /**
  * TestRunner as the name suggests is where the tests are executed from
@@ -70,9 +70,8 @@ public class TestRunner
 
 		TestRunner tr = new TestRunner();
 //		IOTests io_tests = new IOTests(io_test);
-		QueryTests query_test = new QueryTests(host);
+		AggregationTest query_test = new AggregationTest(host);
 		
-		query_test.addKeywordField();
 		
 //		for (int i: tr.range(1, 6)) { // repeat 5 times
 //			System.out.println("Run number: " + Integer.toString(i));

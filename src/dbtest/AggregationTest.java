@@ -1,4 +1,4 @@
-package dbtests;
+package dbtest;
 
 import java.util.ArrayList;
 
@@ -8,11 +8,12 @@ import com.mongodb.DBObject;
 
 import io.FileManager;
 import db.DBDetails;
-import db.MongoDBClient;
+import db.mongodb.MongoDBTweetAggregation;
 
-public class QueryTests extends DBTests {
+public class AggregationTest extends DBTest 
+{
 	// --- Fields ---
-	private MongoDBClient mongodb;
+	private MongoDBTweetAggregation mongodb;
 	private String[] query_test_header = {
 				"objects",
 				"time bucket",
@@ -26,7 +27,7 @@ public class QueryTests extends DBTests {
 	};
 	
 	// --- Constructors ---
-	public QueryTests(DBDetails db_details)
+	public QueryTest(DBDetails db_details)
 	{
 		super(db_details);
 	}
@@ -165,7 +166,7 @@ public class QueryTests extends DBTests {
 		ArrayList<Long> shared_urls_results = new ArrayList<Long>();
 		
 		// prepare 
-		this.mongodb = prepDB();
+		this.mongodb = prepDB("AGGREGATION");
 		prepResultsFile(file_manager, res_path, this.query_test_header);
 		objects = this.mongodb.getCollectionCount();
 		

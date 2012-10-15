@@ -1,4 +1,4 @@
-package dbtests;
+package dbtest;
 
 import io.FileManager;
 
@@ -11,9 +11,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
 import db.DBDetails;
-import db.MongoDBClient;
+import db.mongodb.MongoDBClient;
 
-public class IOTests extends DBTests {
+public class IOTest extends DBTest
+{
 	// --- Fields ---
 	private MongoDBClient mongodb;
 	private String[] io_test_header = {
@@ -25,7 +26,7 @@ public class IOTests extends DBTests {
 	};
 	
 	// --- Constructors ---
-	public IOTests (DBDetails db_details)
+	public IOTest (DBDetails db_details)
 	{
 		super(db_details);
 	}
@@ -125,7 +126,7 @@ public class IOTests extends DBTests {
 		
 		try {
 			// prepare 
-			this.mongodb = prepDB();
+			this.mongodb = prepDB("NORMAL");
 			prepResultsFile(file_manager, res_path, this.io_test_header);
 			
 			// process data file

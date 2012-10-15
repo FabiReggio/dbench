@@ -1,4 +1,4 @@
-package dbtests;
+package dbtest;
 
 import io.FileManager;
 
@@ -8,18 +8,20 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import db.DBDetails;
-import db.MongoDBClient;
+import db.mongodb.MongoDBClient;
+import db.mongodb.MongoDBTweetAggregation;
 
-public class DBTests {
+public class DBTest
+{
 	// --- Fields ---
-	private  MongoDBClient mongodb;
+	private Object mongodb;
 	private String db_host = "";
 	private int db_port = 0;
 	private String db_name = "";
 	private String db_collection = "";
 
 	// --- Constructors ---
-	public DBTests(DBDetails db_details)
+	public DBTest(DBDetails db_details)
 	{
 		this.db_host = db_details.getDBHost();
 		this.db_port = db_details.getDBPort();
@@ -31,8 +33,13 @@ public class DBTests {
 	/**
 	 * Prepare database for tests
 	 */
-	public MongoDBClient prepDB() {
-		this.mongodb = new MongoDBClient();
+	public MongoDBClient prepDB(String type) {
+        if (type.equals("NORMAL"))
+            this.mongodb = new MongoDBClient();
+        else if (type.equals("AGGREGATION")) 
+            this.mongodb = new MongoDBTweetAggregation();
+        else if (type.equals("FIND")) 
+            this.mongodb = new MongoDBTweetFind();
 		this.mongodb.connect(this.db_host, this.db_port, this.db_name);
 		this.mongodb.setCollection(this.db_collection);
 		return this.mongodb;
