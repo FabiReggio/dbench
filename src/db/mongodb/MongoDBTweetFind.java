@@ -1,11 +1,16 @@
 package db.mongodb;
 
-public class TweetFindQueries extends MongoDBClient 
+import com.mongodb.DBObject;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+
+public class MongoDBTweetFind extends MongoDBClient 
 {
 	// --- Fields ---
+	private DBCollection collection;
 	
 	// --- Constructors ---
-	public TweetFindQueries() {}
+	public MongoDBTweetFind() {}
 
 	// --- Methods ---
 	/**

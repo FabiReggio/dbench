@@ -5,7 +5,7 @@ import org.junit.runner.notification.Failure;
 import unittests.MongoDBUnitTests;
 
 import db.DBDetails;
-import db.MongoDBClient;
+import db.mongodb.MongoDBClient;
 import dbtest.IOTest;
 import dbtest.AggregationTest;
 

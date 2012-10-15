@@ -1,11 +1,20 @@
 package db.mongodb;
 
-public class TweetAggregationQueries extends MongoDBClient 
+import com.mongodb.AggregationOutput;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.DBCursor;
+import com.mongodb.DB;
+
+public class MongoDBTweetAggregation extends MongoDBClient 
 {
 	// --- Fields ---
+	private DB db;
+	private DBCollection collection;
 	
 	// --- Constructors ---
-	public TwitterAggregationQueries() {}
+	public MongoDBTweetAggregation() {}
 
 	// --- Methods ---
 	/**
@@ -114,7 +123,7 @@ public class TweetAggregationQueries extends MongoDBClient
 	}
 	
 	/**
-	 * Find Most Hased Tags by using Map Reduce 
+	 * Find Most Hashed Tags by using Map Reduce 
 	 * @return
 	 */
 	public DBCursor mapReduceHashTags() 

@@ -10,6 +10,7 @@ import java.io.InputStream;
 import db.DBDetails;
 import db.mongodb.MongoDBClient;
 import db.mongodb.MongoDBTweetAggregation;
+import db.mongodb.MongoDBTweetFind;
 
 public class DBTest
 {
@@ -33,15 +34,19 @@ public class DBTest
 	/**
 	 * Prepare database for tests
 	 */
-	public MongoDBClient prepDB(String type) {
+	public Object prepDB(String type) {
         if (type.equals("NORMAL"))
             this.mongodb = new MongoDBClient();
+			this.mongodb.connect(this.db_host, this.db_port, this.db_name);
+			this.mongodb.setCollection(this.db_collection);
         else if (type.equals("AGGREGATION")) 
             this.mongodb = new MongoDBTweetAggregation();
+			this.mongodb.connect(this.db_host, this.db_port, this.db_name);
+			this.mongodb.setCollection(this.db_collection);
         else if (type.equals("FIND")) 
             this.mongodb = new MongoDBTweetFind();
-		this.mongodb.connect(this.db_host, this.db_port, this.db_name);
-		this.mongodb.setCollection(this.db_collection);
+			this.mongodb.connect(this.db_host, this.db_port, this.db_name);
+			this.mongodb.setCollection(this.db_collection);
 		return this.mongodb;
 	}
 	

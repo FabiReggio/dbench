@@ -27,7 +27,7 @@ public class AggregationTest extends DBTest
 	};
 	
 	// --- Constructors ---
-	public QueryTest(DBDetails db_details)
+	public AggregationTest(DBDetails db_details)
 	{
 		super(db_details);
 	}
