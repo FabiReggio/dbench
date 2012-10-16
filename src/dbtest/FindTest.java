@@ -2,9 +2,6 @@ package dbtest;
 
 import io.FileManager;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-
 import db.DBDetails;
 import db.mongodb.MongoDBClient;
 import db.mongodb.MongoDBTweetFind;

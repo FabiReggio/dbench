@@ -6,12 +6,13 @@ import unittests.MongoDBUnitTests;
 
 import db.DBDetails;
 import db.mongodb.MongoDBClient;
+import db.solr.SolrClient;
 import dbtest.IOTest;
 import dbtest.AggregationTest;
 
 /**
  * TestRunner as the name suggests is where the tests are executed from
- * @author chris choi 
+ * @author Chris Choi 
  *
  */
 public class TestRunner 
@@ -57,6 +58,7 @@ public class TestRunner
 		String db_name = "db_tests";
 		String db_host1 = "project06.cs.st-andrews.ac.uk";
 		String db_host2 = "project07.cs.st-andrews.ac.uk";
+		String local_host = "http://localhost";
 		int db_port = 27017;
 		
 		String io_col = "io_test_collection";
@@ -68,9 +70,16 @@ public class TestRunner
 //		DBDetails host_1 = new DBDetails(db_host1, db_port, db_name, q_col);
 		DBDetails host = new DBDetails(db_host2, db_port, db_name, q_col);
 
-		TestRunner tr = new TestRunner();
+//		TestRunner tr = new TestRunner();
 //		IOTests io_tests = new IOTests(io_test);
-		AggregationTest aggregation_test = new AggregationTest(host);
+//		AggregationTest aggregation_test = new AggregationTest(host);
+		
+		SolrClient solr = new SolrClient();
+		solr.connect(local_host, 8983);
+		solr.addTweet("sfsdf");
+		
+		
+		
 		
 		
 	}

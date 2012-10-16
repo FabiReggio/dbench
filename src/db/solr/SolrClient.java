@@ -1,7 +1,10 @@
 package db.solr;
 
+import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -33,7 +36,7 @@ public class SolrClient
 	 */
 	public boolean connect(String db_host, int db_port) 
 	{
-		this.server = new HttpSolrServer(db_host + db_port);
+		this.server = new HttpSolrServer(db_host + ":" +  db_port + "/solr/");
 		return false; 
 	}
 
@@ -49,25 +52,33 @@ public class SolrClient
 	
 	/**
 	 * Add Tweet to Solr
-	 * @param json_data
+	 * @param file
 	 * @return
 	 */
-	public boolean addTweet(String json_data)
+	public boolean addTweet(String file)
 	{
 		JsonFactory factory = new JsonFactory(); 
 	    ObjectMapper mapper = new ObjectMapper(factory);
-	    TweetForSolr tweet = new TweetForSolr();
 	    JsonParser json_parser;
-	    SolrInputDocument doc = new SolrInputDocument();
+	    TweetForSolr tweet = new TweetForSolr();
+	    String json_string = "";
 	    
 		try {
-			json_parser = new JsonFactory().createJsonParser(json_data);
-		    tweet = mapper.readValue(json_parser, TweetForSolr.class);
-		    doc.addField("MongoDB Object ID", tweet.getObjId());
-		    doc.addField("Tweet ID", tweet.getTweetId());
-		    doc.addField("Tweet Text", tweet.getTweetText());
-		    this.server.add(doc);
-		    this.server.commit();
+			LineIterator line_iter = FileUtils.lineIterator(new File(file));
+			
+			while (line_iter.hasNext()) {
+				json_string = line_iter.next();
+				json_parser = new JsonFactory().createJsonParser(json_string);
+			    tweet = mapper.readValue(json_parser, TweetForSolr.class);
+			    
+			    SolrInputDocument doc = new SolrInputDocument();
+			    doc.addField("MongoDB Object ID", tweet.getObjId());
+			    doc.addField("Tweet ID", tweet.getTweetId());
+			    doc.addField("Tweet Text", tweet.getTweetText());
+			    
+			    this.server.add(doc);
+			    this.server.commit();
+			}
 		} catch (JsonParseException e) {
 			e.printStackTrace();
 			return false;
@@ -81,7 +92,13 @@ public class SolrClient
 		return true;
 	}
 	
-	public void countTweets(String key, String value)
+	/**
+	 * Counts the number of tweets containing specified value from the 
+	 * key field in question
+	 * @param key
+	 * @param value
+	 */
+	public void tweetCount(String key, String value)
 	{
 		ModifiableSolrParams params = new ModifiableSolrParams();
 		params.set("count", key + ":" + value);
