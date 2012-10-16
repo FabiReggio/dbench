@@ -17,5 +17,6 @@
         <dependency org="org.jongo" name="jongo" rev="0.2"/>
         <dependency org="org.twitter4j" name="twitter4j-core" rev="2.2.6"/>
         <dependency org="junit" name="junit" rev="4.10"/>
+        <dependency org="org.apache.solr" name="solr-solrj" rev="4.0.0-BETA"/>
 	</dependencies>
 </ivy-module>

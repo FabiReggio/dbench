@@ -1,7 +1,6 @@
 package db.mongodb;
 
-import io.FileManager;
-
+import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -25,13 +24,13 @@ public class MongoDBTweetFind
 	 *            Query string
 	 * @return
 	 */
-	public DBObject timeBucket() 
+	public DBObject timeBucket(String pattern) 
 	{
 		// Key
 		DBObject key = new BasicDBObject();
 		
 		// Conditions
-		DBObject regex = new BasicDBObject("$regex", "Tue Jul 24 13:35:*");
+		DBObject regex = new BasicDBObject("$regex", pattern);
 		DBObject cond = new BasicDBObject("created_at", regex);
 		
 		// Initial
@@ -47,6 +46,146 @@ public class MongoDBTweetFind
 				initial,
 				reduce_func);
 		return result;
+	}
+	
+	/**
+	 * Finds the number of tweets that matches the keyword in the text field 
+	 * by using REGEX method 
+	 * @param Keyword
+	 * 		String to match 
+	 * @return
+	 */
+	public int regexFindTweetCount(String keyword)
+	{
+		// Key
+		DBObject regex = new BasicDBObject("$regex", keyword);
+		DBObject key = new BasicDBObject("text", regex);
+		
+		// Find
+		return this.collection.find(key).count();
+	}
+	
+	/**
+	 * Finds the number of tweets that matches the keyword in the text field
+	 * by using _keyword field (which is essentially an array of strings).
+	 * What we are interested is to see if searching through an array of string
+	 * is faster than REGEX
+	 * 
+	 * Example query in mongo shell:
+	 * 		db.collection.find({"_keywords" : "olympics"}).count()
+	 * 
+	 * @return
+	 */
+	public int matchFindTweetCount(String keyword)
+	{
+		// Key
+		DBObject key = new BasicDBObject("_keywords", keyword);
+		
+		// Find
+		return this.collection.find(key).count();
+	}
+	
+	/**
+	 * Finds the number of tweets that matches the keyword in the text field
+	 * by using _keyword field (which is essentially an array of strings).
+	 * What we are interested is to see if searching through an array of string
+	 * is faster than REGEX
+	 * 
+	 * Example query in mongo shell:
+	 * 		db.collection.find({"_keywords" : "olympics"}).count()
+	 * 
+	 * @return
+	 */
+	public int arrayFindTweetCount(String keyword)
+	{
+		// Key
+		DBObject in = new BasicDBObject("$in", keyword);
+		DBObject key = new BasicDBObject("_keywords", in);
+		
+		// Find
+		return this.collection.find(key).count();
+	}
+	
+	/**
+	 * Finds the number of tweets that matches the keyword in the text field
+	 * by using the aggregate framework
+	 * 
+	 * Example query in mongo shell:
+	 * 		db.query_test_collection.aggregate( 
+	 * 			{ $project : { "_keywords" : 1}}, 
+	 * 			{ $unwind : "$_keywords"}, 
+	 * 			{ $match : {"_keywords" : "olympics"}}, 
+	 * 			{ $group : { _id: "$_keywords", count : {$sum : 1}}})
+	 * 
+	 * @return
+	 */
+	public int aggregateKeywordFindTweetCount(String keyword)
+	{
+		// $project
+		DBObject elements = new BasicDBObject();
+		DBObject project = new BasicDBObject("$project", elements);
+		
+		// $unwind
+		DBObject unwind = new BasicDBObject("$unwind", "$_keywords");
+		
+		
+		// $match
+		DBObject pattern = new BasicDBObject("_keywords", keyword);
+		DBObject match = new BasicDBObject("$match", pattern);
+		
+		// $group
+		DBObject group_by = new BasicDBObject();
+		group_by.put("_id", "$_keywords");
+		group_by.put("count", new BasicDBObject("$sum", 1));
+		DBObject group = new BasicDBObject("$group", group_by);
+		
+		AggregationOutput out = this.collection.aggregate(
+				project, 
+				unwind,
+				match,
+				group);
+		return (Integer) out.getCommandResult().get("count");
+	}
+	
+	/**
+	 * Finds the number of tweets that matches the keyword in the text field
+	 * by using the aggregate framework
+	 * 
+	 * Example query in mongo shell:
+	 * 		db.query_test_collection.aggregate( 
+	 * 			{ $project : { "_keywords" : 1}}, 
+	 * 			{ $unwind : "$_keywords"}, 
+	 * 			{ $match : {"text" : /olympics/}}, 
+	 * 			{ $group : { _id: "$_keywords", count : {$sum : 1}}})
+	 * 
+	 * @return
+	 */
+	public int aggregateRegexFindTweetCount(String keyword)
+	{
+		// $project
+		DBObject elements = new BasicDBObject();
+		DBObject project = new BasicDBObject("$project", elements);
+		
+		// $unwind
+		DBObject unwind = new BasicDBObject("$unwind", "$_keywords");
+		
+		
+		// $match
+		DBObject pattern = new BasicDBObject("text", "/" + keyword + "/");
+		DBObject match = new BasicDBObject("$match", pattern);
+		
+		// $group
+		DBObject group_by = new BasicDBObject();
+		group_by.put("_id", "$_keywords");
+		group_by.put("count", new BasicDBObject("$sum", 1));
+		DBObject group = new BasicDBObject("$group", group_by);
+		
+		AggregationOutput out = this.collection.aggregate(
+				project, 
+				unwind,
+				match,
+				group);
+		return (Integer) out.getCommandResult().get("count");
 	}
 	
 	public long getCollectionCount() 

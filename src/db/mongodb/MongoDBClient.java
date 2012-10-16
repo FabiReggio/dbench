@@ -13,10 +13,8 @@ import com.mongodb.util.JSON;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
 
-import db.IDBAdaptor;
 
-
-public class MongoDBClient implements IDBAdaptor 
+public class MongoDBClient 
 {
 	// --- Fields ---
 	private Mongo mongodb;

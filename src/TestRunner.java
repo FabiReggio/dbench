@@ -70,12 +70,8 @@ public class TestRunner
 
 		TestRunner tr = new TestRunner();
 //		IOTests io_tests = new IOTests(io_test);
-		AggregationTest query_test = new AggregationTest(host);
+		AggregationTest aggregation_test = new AggregationTest(host);
 		
 		
-//		for (int i: tr.range(1, 6)) { // repeat 5 times
-//			System.out.println("--------------------------------------------");
-//			query_test_host2.run("project_07_query_results_" + i + ".dat");
-//		}
 	}
 }
