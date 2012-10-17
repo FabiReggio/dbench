@@ -72,15 +72,15 @@ public class TestRunner
 
 //		TestRunner tr = new TestRunner();
 //		IOTests io_tests = new IOTests(io_test);
+//
 //		AggregationTest aggregation_test = new AggregationTest(host);
+//
+//		FindTest find_test = new FindTest(db_host1);
+//		find_test.run(".", 5);
 		
 		SolrClient solr = new SolrClient();
 		solr.connect(local_host, 8983);
-		solr.addTweet("sfsdf");
-		
-		
-		
-		
-		
+//		solr.testQuery();
+		solr.addTweets(t3);
 	}
 }

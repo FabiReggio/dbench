@@ -18,35 +18,35 @@ public class MongoDBTweetFind
 	}
 
 	// --- Methods ---
-	/**
-	 * Find documents - Object Method Test
-	 * @param query
-	 *            Query string
-	 * @return
-	 */
-	public DBObject timeBucket(String pattern) 
-	{
-		// Key
-		DBObject key = new BasicDBObject();
-		
-		// Conditions
-		DBObject regex = new BasicDBObject("$regex", pattern);
-		DBObject cond = new BasicDBObject("created_at", regex);
-		
-		// Initial
-		DBObject initial = new BasicDBObject("sum", 0);
-		
-		// Reduce
-		String reduce_func = "function(doc, prev) {prev.sum += 1}";
-		
-		// Group Command
-		DBObject result = this.collection.group(
-				key,
-				cond,
-				initial,
-				reduce_func);
-		return result;
-	}
+//	/**
+//	 * Find documents - Object Method Test
+//	 * @param query
+//	 *            Query string
+//	 * @return
+//	 */
+//	public DBObject timeBucket(String pattern) 
+//	{
+//		// Key
+//		DBObject key = new BasicDBObject();
+//		
+//		// Conditions
+//		DBObject regex = new BasicDBObject("$regex", pattern);
+//		DBObject cond = new BasicDBObject("created_at", regex);
+//		
+//		// Initial
+//		DBObject initial = new BasicDBObject("sum", 0);
+//		
+//		// Reduce
+//		String reduce_func = "function(doc, prev) {prev.sum += 1}";
+//		
+//		// Group Command
+//		DBObject result = this.collection.group(
+//				key,
+//				cond,
+//				initial,
+//				reduce_func);
+//		return result;
+//	}
 	
 	/**
 	 * Finds the number of tweets that matches the keyword in the text field 
@@ -99,8 +99,8 @@ public class MongoDBTweetFind
 	public int arrayFindTweetCount(String keyword)
 	{
 		// Key
-		DBObject in = new BasicDBObject("$in", keyword);
-		DBObject key = new BasicDBObject("_keywords", in);
+		DBObject all = new BasicDBObject("$all", keyword.split(" "));
+		DBObject key = new BasicDBObject("_keywords", all);
 		
 		// Find
 		return this.collection.find(key).count();
@@ -119,59 +119,17 @@ public class MongoDBTweetFind
 	 * 
 	 * @return
 	 */
-	public int aggregateKeywordFindTweetCount(String keyword)
+	public int aggregateFindTweetCount(String keyword)
 	{
 		// $project
-		DBObject elements = new BasicDBObject();
+		DBObject elements = new BasicDBObject("_keywords", 1);
 		DBObject project = new BasicDBObject("$project", elements);
 		
 		// $unwind
 		DBObject unwind = new BasicDBObject("$unwind", "$_keywords");
-		
 		
 		// $match
 		DBObject pattern = new BasicDBObject("_keywords", keyword);
-		DBObject match = new BasicDBObject("$match", pattern);
-		
-		// $group
-		DBObject group_by = new BasicDBObject();
-		group_by.put("_id", "$_keywords");
-		group_by.put("count", new BasicDBObject("$sum", 1));
-		DBObject group = new BasicDBObject("$group", group_by);
-		
-		AggregationOutput out = this.collection.aggregate(
-				project, 
-				unwind,
-				match,
-				group);
-		return (Integer) out.getCommandResult().get("count");
-	}
-	
-	/**
-	 * Finds the number of tweets that matches the keyword in the text field
-	 * by using the aggregate framework
-	 * 
-	 * Example query in mongo shell:
-	 * 		db.query_test_collection.aggregate( 
-	 * 			{ $project : { "_keywords" : 1}}, 
-	 * 			{ $unwind : "$_keywords"}, 
-	 * 			{ $match : {"text" : /olympics/}}, 
-	 * 			{ $group : { _id: "$_keywords", count : {$sum : 1}}})
-	 * 
-	 * @return
-	 */
-	public int aggregateRegexFindTweetCount(String keyword)
-	{
-		// $project
-		DBObject elements = new BasicDBObject();
-		DBObject project = new BasicDBObject("$project", elements);
-		
-		// $unwind
-		DBObject unwind = new BasicDBObject("$unwind", "$_keywords");
-		
-		
-		// $match
-		DBObject pattern = new BasicDBObject("text", "/" + keyword + "/");
 		DBObject match = new BasicDBObject("$match", pattern);
 		
 		// $group
