@@ -6,5 +6,5 @@ docs/
 lib/
 lib/*
 .dat
-nohup.dat
+nohup.out
 

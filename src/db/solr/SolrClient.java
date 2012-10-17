@@ -13,11 +13,15 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
 
-import twitter4j.Tweet;
+import twitter4j.Status;
 import twitter4j.TwitterException;
 import twitter4j.json.DataObjectFactory;
 
 
+/**
+ * Solr Client
+ * @author Chris Choi
+ */
 public class SolrClient 
 {
 	// --- Fields ---
@@ -33,59 +37,61 @@ public class SolrClient
 	 * @param db_port
 	 * @return
 	 */
-	public boolean connect(String db_host, int db_port) 
+	public void connect(String db_host, int db_port) 
 	{
 		this.server = new HttpSolrServer(db_host + ":" +  db_port + "/solr/");
-		return false; 
 	}
 
 	/**
 	 * Disconnect from Solr server
 	 * @return
 	 */
-	public boolean disconnect() 
+	public void disconnect() 
 	{
 		this.server.shutdown();
-		return false;
 	}
 	
 	/**
 	 * Add Tweet to Solr
 	 * @param file
+	 * @param tweets
+	 * 		Number of tweets to add 
 	 * @return
+	 * 		True or False
 	 */
-	public boolean addTweets(String file)
+	public boolean addTweets(String file, int tweets)
 	{
 	    String json_string = "";
 	    
 		try {
 			LineIterator line_iter = FileUtils.lineIterator(new File(file));
 			
-			int limit = 1;
+			int limit = tweets;
 			int count = 0;
 			while (line_iter.hasNext()) {
+				// check limit
 				if (count == limit) break;
 				count++;
 				
+				// raw json to object
 				json_string = line_iter.next();
-//				System.out.println(json_string);
-				
-				Object tweet = DataObjectFactory.createTweet(json_string);
-			    System.out.println(tweet.toString());
+				Status tweet = DataObjectFactory.createStatus(json_string);
 			    
-//			    SolrInputDocument doc = new SolrInputDocument();
-//			    doc.addField("MongoDB Object ID", tweet.getObjId());
-//			    doc.addField("Tweet ID", tweet.getTweetId());
-//			    doc.addField("Tweet Text", tweet.getTweetText());
-//			    this.server.add(doc);
-//			    this.server.commit();
+				// create solr document
+			    SolrInputDocument doc = new SolrInputDocument();
+			    doc.addField("id", tweet.getId());
+			    doc.addField("text", tweet.getText());
+			    
+			    // add to server
+			    this.server.add(doc);
+			    this.server.commit();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
-//		} catch (SolrServerException e) {
-//			e.printStackTrace();
-//			return false;
+		} catch (SolrServerException e) {
+			e.printStackTrace();
+			return false;
 		} catch (TwitterException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -94,48 +100,86 @@ public class SolrClient
 	}
 	
 	/**
+	 * Add Tweet to Solr
+	 * @param file
+	 * @return
+	 * 		True or False
+	 */
+	public boolean addTweets(String file)
+	{
+		return addTweets(file, -1);
+	}
+	
+	/**
 	 * Counts the number of tweets containing specified value from the 
 	 * key field in question
 	 * @param key
 	 * @param value
 	 */
-	public void tweetCount(String key, String value)
+	public int tweetCount(String key, String value)
 	{
-		ModifiableSolrParams params = new ModifiableSolrParams();
-		params.set("q", key + ":" + value);
-		
 		try {
+			ModifiableSolrParams params = new ModifiableSolrParams();
+			params.set("q", key + ":" + value);
+			
 			QueryResponse response = this.server.query(params);
 			SolrDocumentList results = response.getResults();
+			
+			System.out.println("hits: " + results.getNumFound());
+			System.out.println("query time (ms): " + response.getElapsedTime());
+			System.out.println("tweets: " + results.size());
+			
+			int limit = 10;
+			int count = 0;
 			for (SolrDocument doc : results) {
-				System.out.println(doc.toString());
+				if (limit == count) break;
+				count++;
+				
+				System.out.println("[DOC]: " + doc.getFieldValue("text"));
 			}
+			
+			return results.size();
 		} catch (SolrServerException e) {
 			e.printStackTrace();
 		}
 		
+		return 0;
 	}
 	
 	/**
 	 * 
 	 */
-	public void testQuery() {
-		ModifiableSolrParams params = new ModifiableSolrParams();
-		params.set("q", "*:*");
-		
+	public void testQuery() 
+	{
 		try {
+			ModifiableSolrParams params = new ModifiableSolrParams();
+			params.set("q", "*:*");
+			
 			QueryResponse response = this.server.query(params);
 			SolrDocumentList results = response.getResults();
-			long query_time = response.getElapsedTime();
 			
 			System.out.println("hits: " + results.getNumFound());
-			System.out.println("query time (ms): " + query_time);
+			System.out.println("query time (ms): " + response.getElapsedTime());
 			
 			for (SolrDocument doc : results) {
-				System.out.println("DOC: " + doc.toString());
+				System.out.println("DOC: " + doc.getFieldValue("text"));
 			}
 		} catch (SolrServerException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void deleteAll() 
+	{
+		try {
+			this.server.deleteByQuery("*:*");
+			this.server.commit();
+		} catch (SolrServerException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
 }

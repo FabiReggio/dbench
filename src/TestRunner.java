@@ -13,7 +13,6 @@ import dbtest.AggregationTest;
 /**
  * TestRunner as the name suggests is where the tests are executed from
  * @author Chris Choi 
- *
  */
 public class TestRunner 
 {
@@ -80,7 +79,9 @@ public class TestRunner
 		
 		SolrClient solr = new SolrClient();
 		solr.connect(local_host, 8983);
-//		solr.testQuery();
+//		solr.deleteAll();
 		solr.addTweets(t3);
+//		solr.testQuery();
+//		solr.tweetCount("text", "olympics");
 	}
 }
