@@ -2,6 +2,8 @@ package db.solr;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -62,12 +64,15 @@ public class SolrClient
 	public boolean addTweets(String file, int tweets)
 	{
 	    String json_string = "";
+	    long bad_tweets = 0; // number of bad tweets
+	    ArrayList<Long> bad_tweets_record = new ArrayList<Long>();
+	    Collection<SolrInputDocument> doc_list = new ArrayList<SolrInputDocument>();
+		long limit = tweets;
+		long count = 0;
 	    
 		try {
 			LineIterator line_iter = FileUtils.lineIterator(new File(file));
 			
-			int limit = tweets;
-			int count = 0;
 			while (line_iter.hasNext()) {
 				// check limit
 				if (count == limit) break;
@@ -75,26 +80,42 @@ public class SolrClient
 				
 				// raw json to object
 				json_string = line_iter.next();
-				Status tweet = DataObjectFactory.createStatus(json_string);
-			    
-				// create solr document
-			    SolrInputDocument doc = new SolrInputDocument();
-			    doc.addField("id", tweet.getId());
-			    doc.addField("text", tweet.getText());
-			    
-			    // add to server
-			    this.server.add(doc);
-			    this.server.commit();
+				
+				try {
+					Status tweet = DataObjectFactory.createStatus(json_string);
+					
+					// create solr document
+				    SolrInputDocument doc = new SolrInputDocument();
+				    doc.addField("id", tweet.getId());
+				    doc.addField("text", tweet.getText());
+				    doc_list.add(doc);
+				    
+				    // add to server every 10000 docs
+				    if ((doc_list.size() % 10000) == 0) {
+				    	System.out.println("Adding 10000 docs to solr");
+					    this.server.add(doc_list);
+					    doc_list.clear();
+				    }
+				} catch (TwitterException e) {
+					System.out.println("Error bad tweet on line: " + count);
+					bad_tweets_record.add(count);
+					bad_tweets++;
+				} 
 			}
+			this.server.add(doc_list); // flush out remaining docs in doc_list
+			this.server.commit(); // commit!
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		} catch (SolrServerException e) {
 			e.printStackTrace();
 			return false;
-		} catch (TwitterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} finally {
+			System.out.println("Inserted: " + (count - bad_tweets));
+			System.out.println("Number of Bad Tweets: " + bad_tweets);
+			System.out.println("On line numbers:");
+			for (int i = 0; i <= bad_tweets_record.size(); i++)
+				System.out.println((i + 1) + ": " + bad_tweets_record.get(i));
 		}
 		return true;
 	}

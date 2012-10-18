@@ -92,7 +92,7 @@ public class MongoDBTweetFind
 	 * is faster than REGEX
 	 * 
 	 * Example query in mongo shell:
-	 * 		db.collection.find({"_keywords" : "olympics"}).count()
+	 * 		db.collection.find({"_keywords" : {$all : ["olympics"]}}).count()
 	 * 
 	 * @return
 	 */

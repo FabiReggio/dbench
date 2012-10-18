@@ -79,65 +79,77 @@ public class AggregationTest extends DBTest
 		System.out.println("-------------- Results -----------------");
 		System.out.printf("objects queried: %d \n", objects);
 		System.out.println("-------------- Map-Reduce ---------------");
-		System.out.printf("user mentions time: %f mins \n", user_mentions_mptime);
-		System.out.printf("hash tags time: %f mins \n", hash_tags_mptime);
-		System.out.printf("shared urls time: %f mins \n", shared_urls_mptime);
+		System.out.printf("user mentions: %f mins \n", user_mentions_mptime);
+		System.out.printf("hash tags: %f mins \n", hash_tags_mptime);
+		System.out.printf("shared urls: %f mins \n", shared_urls_mptime);
 		System.out.println("----------- Aggregate Framework ---------");
-		System.out.printf("user mentions time: %f mins \n", user_mentions_atime);
-		System.out.printf("hash tags time: %f mins \n", hash_tags_atime);
-		System.out.printf("shared urls time: %f mins \n", shared_urls_atime);
+		System.out.printf("user mentions: %f mins \n", user_mentions_atime);
+		System.out.printf("hash tags: %f mins \n", hash_tags_atime);
+		System.out.printf("shared urls: %f mins \n", shared_urls_atime);
 		System.out.println("----------------------------------------");
 	}
 	
 	/**
 	 * Performs the aggregation, it performs both Map-Reduce queries and
-	 * Aggregate Framework queries.
+	 * Aggregate Framework queries, on the following (We assume you have 
+	 * twitter data in MongoDB already).
+	 * 
+	 * - Most User Mentioned
+	 * - Most Hashed Tags
+	 * - Most Shared URLs
+	 * 
 	 * @param mode
-	 * 		mode = 1: queries most user mentioned
-	 * 		mode = 2: queries most hash tag used
-	 * 		mode = 3: queries most shared url 
+	 * 		mode = 1: Map-Reduce
+	 * 		mode = 2: Aggregate Framework
 	 * @return
-	 * 		ArrayList of Long, containing both Map-Reduce and Aggregate
+	 * 		ArrayList of Float, containing both Map-Reduce and Aggregate
 	 * 		Framework execution time.
 	 */
-	public ArrayList<Long> executeAggregation(int mode) 
+	public ArrayList<Float> executeAggregation(int mode) 
 	{
-		ArrayList<Long> results = new ArrayList<Long>();
-		long start_time = 0;
+		ArrayList<Float> results = new ArrayList<Float>();
+		float start_time = 0;
 		
-		// map-reduce method
-		System.out.println("map-reduce method");
-		
-		start_time = System.currentTimeMillis();
 		switch(mode) {
 			case 1:
+				System.out.println("map-reduce method");
+				
+				// most user mentions
+				start_time = System.currentTimeMillis();
 				displayMPQueryResults(this.mongodb.mapReduceUserMentions());
-				break;
-			case 2:
+				results.add((System.currentTimeMillis() - start_time) / 60000);
+				
+				// most hash-tags
+				start_time = System.currentTimeMillis();
 				displayMPQueryResults(this.mongodb.mapReduceHashTags());
-				break;
-			case 3:
+				results.add((System.currentTimeMillis() - start_time) / 60000);
+				
+				// most shared urls 
+				start_time = System.currentTimeMillis();
 				displayMPQueryResults(this.mongodb.mapReduceSharedUrls());
-				break;
-		}
-		results.add((System.currentTimeMillis() - start_time) / 60000);
-		
-		// aggregate method
-		System.out.println("aggregate framework method");
-		start_time = System.currentTimeMillis();
-		switch(mode) {
-			case 1:
-				displayAggreQueryResults(this.mongodb.aggregateUserMentions());
+				results.add((System.currentTimeMillis() - start_time) / 60000);
+				
 				break;
 			case 2:
+				System.out.println("aggregate framework method");
+				
+				// most user mentions
+				start_time = System.currentTimeMillis();
+				displayAggreQueryResults(this.mongodb.aggregateUserMentions());
+				results.add((System.currentTimeMillis() - start_time) / 60000);
+				
+				// most hast-tags
+				start_time = System.currentTimeMillis();
 				displayAggreQueryResults(this.mongodb.aggregateHashTags());
-				break;
-			case 3:
+				results.add((System.currentTimeMillis() - start_time) / 60000);
+				
+				// most shared urls
+				start_time = System.currentTimeMillis();
 				displayAggreQueryResults(this.mongodb.aggregateSharedUrls());
+				results.add((System.currentTimeMillis() - start_time) / 60000);
+				
 				break;
 		}
-		results.add((System.currentTimeMillis() - start_time) / 60000);
-		System.out.printf("\n\n");
 		
 		return results;
 	}
@@ -154,50 +166,46 @@ public class AggregationTest extends DBTest
 		FileManager file_manager = new FileManager();
 
 		long objects = 0; // number of objects in collection
-		ArrayList<Long> user_mentions_results = new ArrayList<Long>();
-		ArrayList<Long> hash_tags_results = new ArrayList<Long>();
-		ArrayList<Long> shared_urls_results = new ArrayList<Long>();
+		ArrayList<Float> map_reduce_results = new ArrayList<Float>();
+		ArrayList<Float> aggregate_framework_results = new ArrayList<Float>();
 		
 		// prepare 
 		prepResultsFile(file_manager, res_path, this.results_header);
 		objects = this.mongodb.getCollectionCount();
 		
 		// run tests
-		// USER MENTIONS
-		System.out.println("USER MENTIONS");
-		user_mentions_results = executeAggregation(1);
-		
-		// HASH TAGS
-		System.out.println("HASH TAGS");
-		hash_tags_results = executeAggregation(2);
-		
-		// SHARED URLS
-		System.out.println("SHARED URLS");
-		shared_urls_results = executeAggregation(3);
+		map_reduce_results = executeAggregation(1);
+		aggregate_framework_results = executeAggregation(2);
 		
 		// display results
 		displaySummaryResults(
 				objects,
-				user_mentions_results.get(0),
-				hash_tags_results.get(0),
-				shared_urls_results.get(0),
-				user_mentions_results.get(1),
-				hash_tags_results.get(1),
-				shared_urls_results.get(1)
+				map_reduce_results.get(0), // user mentions
+				map_reduce_results.get(1), // hash tags
+				map_reduce_results.get(2), // shared urls 
+				aggregate_framework_results.get(0), // user mentions
+				aggregate_framework_results.get(1), // hash tags
+				aggregate_framework_results.get(2) // shared urls
 				);
 		System.out.printf("\n\n");
 		
 		// log results
 		String[] csv_line = {
 				Long.toString(objects), // number of objects in collection
-				// map reduce
-				Float.toString(user_mentions_results.get(0)),
-				Float.toString(hash_tags_results.get(0)),
-				Float.toString(shared_urls_results.get(0)),
-				// aggregate framework
-				Float.toString(user_mentions_results.get(1)),
-				Float.toString(hash_tags_results.get(1)),
-				Float.toString(shared_urls_results.get(1))
+				// MAP-REDUCE
+				// user mentions
+				Float.toString(map_reduce_results.get(0)), 
+				// hash tags
+				Float.toString(map_reduce_results.get(1)), 
+				// shared urls 
+				Float.toString(map_reduce_results.get(2)), 
+				// AGGREGATE FRAMEWORK
+				// user mentions
+				Float.toString(aggregate_framework_results.get(0)),
+				// hash tags
+				Float.toString(aggregate_framework_results.get(1)),
+				// shared urls 
+				Float.toString(aggregate_framework_results.get(2)) 
 		};
 		file_manager.csvLogEvent(csv_line);
 		
@@ -212,9 +220,9 @@ public class AggregationTest extends DBTest
 	 */
 	public void run(String res_path, int repeat) 
 	{
-		for (int i = 0; i <= repeat; i++) {
+		for (int i = 1; i <= repeat; i++) {
 			System.out.println("Run number: " + Integer.toString(i));
-			this.test(res_path + "aggre_results_" + (i + 1) + ".csv");
+			this.test(res_path + "aggre_results_" + i + ".csv");
 		}
 	}
 	

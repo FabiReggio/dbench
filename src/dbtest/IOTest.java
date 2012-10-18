@@ -26,7 +26,7 @@ public class IOTest extends DBTest
 	};
 	
 	// --- Constructors ---
-	public IOTest (DBDetails db_details)
+	public IOTest(DBDetails db_details)
 	{
 		super(db_details);
 		this.mongodb = prepDB();
@@ -59,7 +59,7 @@ public class IOTest extends DBTest
 	 * @param mode
 	 * @return
 	 */
-	public ArrayList<Float> timeIO(
+	public ArrayList<Float> executeIO(
 			String fp, 
 			int lines_limit,
 			String mode) 
@@ -142,7 +142,7 @@ public class IOTest extends DBTest
 				
 				// INSERT
 				System.out.println("performing insert");
-				insert_res = timeIO(data_file, line_limit, "insert");
+				insert_res = executeIO(data_file, line_limit, "insert");
 				
 				// FSYNC (by sleeping for 2 minutes for good measure)
 				System.out.println("sleep for 2 minutes");
@@ -150,7 +150,7 @@ public class IOTest extends DBTest
 				
 				// REMOVE
 				System.out.println("performing remove all");
-				remove_res = timeIO(data_file, line_limit, "remove");
+				remove_res = executeIO(data_file, line_limit, "remove");
 				
 				// calculate insert and remove per second
 				float objects = insert_res.get(1);
@@ -194,9 +194,10 @@ public class IOTest extends DBTest
 	 */
 	public void run(String data_file, String res_path, int repeat, int slice) 
 	{
-		for (int i = 0; i <= repeat; i++) {
+		for (int i = 1; i <= repeat; i++) {
+			System.out.println("Run number: " + Integer.toString(i));
 			this.test(data_file, 
-					res_path + "io_results_" + (i + 1) + ".csv",
+					res_path + "io_results_" + i + ".csv",
 					slice);
 		}
 	}

@@ -1,9 +1,6 @@
 package dbtest;
 
-import java.util.ArrayList;
-
 import io.FileManager;
-
 import db.DBDetails;
 import db.mongodb.MongoDBClient;
 import db.mongodb.MongoDBTweetFind;
@@ -99,8 +96,7 @@ public class FindTest extends DBTest {
 	 */
 	public Float executeFind(int mode, String keyword) 
 	{
-		long start_time = 0;
-		start_time = System.currentTimeMillis();
+		float start_time = System.currentTimeMillis();
 		switch(mode) {
 			case 1:
 				this.mongodb.regexFindTweetCount(keyword);
@@ -115,7 +111,7 @@ public class FindTest extends DBTest {
 				this.mongodb.aggregateFindTweetCount(keyword);
 				break;
 		}
-		return (float) ((System.currentTimeMillis() - start_time) / 60000.0);
+		return ((System.currentTimeMillis() - start_time) / 60000);
 	}
 	
 	/**
@@ -141,16 +137,20 @@ public class FindTest extends DBTest {
 		
 		// run test
 		// SINGLE KEYWORD
-		for (String s : single_keywords) {
-			regex_time = executeFind(1, s);
-			match_time = executeFind(2, s);
-			array_time = executeFind(3, s);
-			aggregate_time = executeFind(4, s);
+		for (String keyword : single_keywords) {
+			// DUMMY RUN
+			executeFind(1, keyword);
+			
+			// REAL RUN 
+			regex_time = executeFind(1, keyword);
+			match_time = executeFind(2, keyword);
+			array_time = executeFind(3, keyword);
+			aggregate_time = executeFind(4, keyword);
 			
 			// display results
 			displaySingleKeywordResultsSummary(
 					objects, 
-					s, // keyword
+					keyword, 
 					regex_time, 
 					match_time, 
 					array_time,
@@ -159,7 +159,7 @@ public class FindTest extends DBTest {
 			// log results
 			String[] csv_line = {
 					Long.toString(objects), // number of objects in collection
-					s, // keyword
+					keyword, // keyword
 					Float.toString(regex_time),
 					Float.toString(match_time),
 					Float.toString(array_time),
@@ -192,20 +192,24 @@ public class FindTest extends DBTest {
 		
 		// run test
 		// DOUBLE KEYWORD
-		for (String s : double_keywords) {
-			regex_time = executeFind(1, s);
-			array_time = executeFind(3, s);
+		for (String keyword : double_keywords) {
+			// DUMMY RUN
+			executeFind(1, keyword);
+			
+			// REAL RUN
+			regex_time = executeFind(1, keyword);
+			array_time = executeFind(3, keyword);
 			
 			displayDoubleKeywordResultsSummary(
 					objects, 
-					s, // keyword
+					keyword, 
 					regex_time, 
 					array_time);
 			
 			// log results
 			String[] csv_line = {
 					Long.toString(objects), // number of objects in collection
-					s, // keyword
+					keyword, // keyword
 					Float.toString(regex_time),
 					Float.toString(array_time),
 			};
@@ -223,12 +227,12 @@ public class FindTest extends DBTest {
 	 */
 	public void run(String res_path, int repeat) 
 	{
-		for (int i = 0; i <= repeat; i++) {
+		for (int i = 1; i <= repeat; i++) {
 			System.out.println("Run number: " + Integer.toString(i));
 			this.testSingleKeyword(
-					res_path + "single_find_results_" + (i + 1) + ".csv");
+					res_path + "single_find_results_" + i + ".csv");
 			this.testDoubleKeyword(
-					res_path + "double_find_results_" + (i + 1) + ".csv");
+					res_path + "double_find_results_" + i + ".csv");
 		}
 	}
 	
