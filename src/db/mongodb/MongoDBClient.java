@@ -92,14 +92,7 @@ public class MongoDBClient
 	public boolean disconnect() 
 	{
 		this.mongodb.close();
-
-		// double check connection is indeed closed
-		try {
-			this.mongodb.getDatabaseNames();
-		} catch (MongoException e) {
-			return true;
-		}
-		return false;
+		return true;
 	}
 
 	/**
@@ -339,7 +332,7 @@ public class MongoDBClient
 	
 	public DB getDB() 
 	{
-		return this.mongodb.getDB(this.db_name);
+		return this.db;
 	}
 	
 	public String getDBName() 

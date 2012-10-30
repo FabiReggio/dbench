@@ -5,7 +5,7 @@ import db.DBDetails;
 import db.mongodb.MongoDBClient;
 import db.mongodb.MongoDBTweetFind;
 
-public class FindTest extends DBTest {
+public class MongoDBFindTest extends MongoDBTest {
 	// --- Fields ---
 	private MongoDBTweetFind mongodb;
 	private String[] single_results_header = {
@@ -37,7 +37,7 @@ public class FindTest extends DBTest {
 	};
 	
 	// --- Constructors ---
-	public FindTest(DBDetails db_details) {
+	public MongoDBFindTest(DBDetails db_details) {
 		super(db_details);
 		MongoDBClient client = prepDB();
 		this.mongodb = new MongoDBTweetFind(client);
@@ -74,7 +74,7 @@ public class FindTest extends DBTest {
 			float regex,
 			float array)
 	{
-		System.out.println("----------- Single Keyword Results --------------");
+		System.out.println("----------- Double Keyword Results --------------");
 		System.out.printf("objects queried: %d \n", objects);
 		System.out.printf("keyword: %s \n", keyword);
 		System.out.printf("regex find: %f \n", regex);
@@ -96,22 +96,30 @@ public class FindTest extends DBTest {
 	 */
 	public Float executeFind(int mode, String keyword) 
 	{
-		float start_time = System.currentTimeMillis();
+		float time = 0;
+		long count = 0;
+		float start_time = (float) System.currentTimeMillis();
 		switch(mode) {
 			case 1:
-				this.mongodb.regexFindTweetCount(keyword);
+				count = this.mongodb.regexFindTweetCount(keyword);
+				System.out.println("REGEX Found: " + count);
 				break;
 			case 2:
-				this.mongodb.matchFindTweetCount(keyword);
+				count = this.mongodb.matchFindTweetCount(keyword);
+				System.out.println("Match Found: " + count);
 				break;
 			case 3:
-				this.mongodb.arrayFindTweetCount(keyword);
+				count = this.mongodb.arrayFindTweetCount(keyword);
+				System.out.println("Array Found: " + count);
 				break;
 			case 4:
-				this.mongodb.aggregateFindTweetCount(keyword);
+				count = this.mongodb.aggregateFindTweetCount(keyword);
+				System.out.println("Aggregate Found: " + count);
 				break;
 		}
-		return ((System.currentTimeMillis() - start_time) / 60000);
+		time = ((float) System.currentTimeMillis() - start_time) / 60000;
+		System.out.println("Time: " + time + " mins");
+		return time;
 	}
 	
 	/**
@@ -138,6 +146,8 @@ public class FindTest extends DBTest {
 		// run test
 		// SINGLE KEYWORD
 		for (String keyword : single_keywords) {
+			System.out.println("\n");
+			System.out.println("Testing Keyword: " + keyword);
 			// DUMMY RUN
 			executeFind(1, keyword);
 			
@@ -155,6 +165,7 @@ public class FindTest extends DBTest {
 					match_time, 
 					array_time,
 					aggregate_time);
+			System.out.println("\n");
 			
 			// log results
 			String[] csv_line = {
@@ -193,6 +204,7 @@ public class FindTest extends DBTest {
 		// run test
 		// DOUBLE KEYWORD
 		for (String keyword : double_keywords) {
+			System.out.println("Testing Keyword: " + keyword);
 			// DUMMY RUN
 			executeFind(1, keyword);
 			

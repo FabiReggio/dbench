@@ -18,8 +18,8 @@ public class MongoDBTweetAggregation
 	public MongoDBTweetAggregation(MongoDBClient mongodb) 
 	{
 		this.mongodb = mongodb;
-		this.collection = mongodb.getCollection();
-		this.db = mongodb.getDB();
+		this.collection = this.mongodb.getCollection();
+		this.db = this.mongodb.getDB();
 	}
 
 	// --- Methods ---
@@ -253,10 +253,10 @@ public class MongoDBTweetAggregation
 	}
 	
 	/**
-	 * Adds a new keyword field called "_keywords" to all documents in collection
-	 * The reason for this is to test if search through array containing the keywords is 
-	 * faster than using REGEX as full text search in MongoDB
-	 * 
+	 * Adds a new keyword field called "_keywords" to all documents in 
+	 * collection The reason for this is to test if search through array 
+	 * containing the keywords is faster than using REGEX as full text search 
+	 * in MongoDB
 	 */
 	public void addKeywordField(String target)
 	{

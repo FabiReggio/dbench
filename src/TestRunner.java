@@ -7,8 +7,9 @@ import unittests.MongoDBUnitTests;
 import db.DBDetails;
 import db.mongodb.MongoDBClient;
 import db.solr.SolrClient;
-import dbtest.IOTest;
-import dbtest.AggregationTest;
+import dbtest.MongoDBFindTest;
+import dbtest.MongoDBIOTest;
+import dbtest.MongoDBAggregationTest;
 
 /**
  * TestRunner as the name suggests is where the tests are executed from
@@ -40,33 +41,32 @@ public class TestRunner
 	public static void main(String[] argv) 
 	{
 		String db_name = "db_tests";
-		String db_host1 = "project06.cs.st-andrews.ac.uk";
-		String db_host2 = "project07.cs.st-andrews.ac.uk";
+		String p6 = "project06.cs.st-andrews.ac.uk";
+		String p7 = "project07.cs.st-andrews.ac.uk";
 		String local_host = "http://localhost";
 		int db_port = 27017;
 		
 		String io_col = "io_test_collection";
 		String q_col = "query_test_collection";
-		String t = "/datadisk1/home/chris/twitter_data/100meters.json";
-		String t2 = "/datadisk1/home/chris/twitter_data/100meters.json.test";
-		String t3 = "/datadisk1/userContent/olympics3.jsonl";
+		String test_col = "test";
+		String x = "/datadisk1/userContent/olympics3.jsonl";
+		String y = "/datadisk1/home/chris/twitter_data/100meters.json.test";
 		
-//		DBDetails host_1 = new DBDetails(db_host1, db_port, db_name, q_col);
-//		DBDetails host = new DBDetails(db_host2, db_port, db_name, q_col);
+		DBDetails proj06 = new DBDetails(p6, db_port, db_name, io_col);
+		MongoDBIOTest io_test = new MongoDBIOTest(proj06);
+		io_test.run(y, "./", 5);
 
-//		TestRunner tr = new TestRunner();
-//		IOTests io_tests = new IOTests(io_test);
-//
-//		AggregationTest aggregation_test = new AggregationTest(host);
-//
-//		FindTest find_test = new FindTest(db_host1);
-//		find_test.run(".", 5);
+		/* MongoDBAggregationTest aggre_test = new MongoDBAggregationTest(proj07); */
+		/* MongoDBFindTest find_test = new MongoDBFindTest(host_proj07); */
 		
-		SolrClient solr = new SolrClient();
-		solr.connect(local_host, 8983);
+		/* find_test.run("./", 5); */
+		/* aggre_test.run("./", 5); */
+		
+//		SolrClient solr = new SolrClient();
+//		solr.connect(local_host, 8983);
 //		solr.deleteAll();
-		solr.addTweets(t3);
-		solr.testQuery();
+//		solr.addTweets(t3);
+//		solr.testQuery();
 //		solr.tweetCount("text", "olympics");
 	}
 }

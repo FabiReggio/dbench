@@ -114,7 +114,7 @@ public class SolrClient
 			System.out.println("Inserted: " + (count - bad_tweets));
 			System.out.println("Number of Bad Tweets: " + bad_tweets);
 			System.out.println("On line numbers:");
-			for (int i = 0; i <= bad_tweets_record.size(); i++)
+			for (int i = 0; i < bad_tweets_record.size(); i++)
 				System.out.println((i + 1) + ": " + bad_tweets_record.get(i));
 		}
 		return true;
@@ -168,7 +168,7 @@ public class SolrClient
 	}
 	
 	/**
-	 * 
+	 * Just a dummy query to see if Solr is working 
 	 */
 	public void testQuery() 
 	{
@@ -190,6 +190,9 @@ public class SolrClient
 		}
 	}
 	
+	/**
+	 * Deletes all data in solr collection
+	 */
 	public void deleteAll() 
 	{
 		try {

@@ -13,7 +13,7 @@ import org.apache.commons.io.LineIterator;
 import db.DBDetails;
 import db.mongodb.MongoDBClient;
 
-public class IOTest extends DBTest
+public class MongoDBIOTest extends MongoDBTest
 {
 	// --- Fields ---
 	private MongoDBClient mongodb;
@@ -21,12 +21,12 @@ public class IOTest extends DBTest
 			"objects",
 			"insert", 
 			"remove", 
-			"insert per msec",
-			"remove per msec",
+			"insert per min",
+			"remove per min"
 	};
 	
 	// --- Constructors ---
-	public IOTest(DBDetails db_details)
+	public MongoDBIOTest(DBDetails db_details)
 	{
 		super(db_details);
 		this.mongodb = prepDB();
@@ -40,16 +40,16 @@ public class IOTest extends DBTest
 			int line_limit,
 			ArrayList<Float> insert_res,
 			ArrayList<Float> remove_res,
-			Float inserted_per_msec,
-			Float removed_per_msec)
+			Float insert_rate,
+			Float remove_rate)
 	{
 		System.out.println("-------------- Results -----------------");
 		System.out.printf("tested: %f \n", insert_res.get(1));
 		System.out.printf("lines tested: %d \n", line_limit);
 		System.out.printf("insert time: %f ms\n", insert_res.get(0));
 		System.out.printf("remove time: %f ms\n", remove_res.get(0));
-		System.out.printf("insert/msec: %f \n", inserted_per_msec);
-		System.out.printf("remove/msec: %f \n", removed_per_msec);
+		System.out.printf("insert/ms: %f \n", insert_rate);
+		System.out.printf("remove/ms: %f \n", remove_rate);
 	}
 	
 	/**
@@ -68,39 +68,39 @@ public class IOTest extends DBTest
 		int line_number = 0;
 		float objects = 0; // objects inserted
 		String line = "";
-		long start_time = 0;
-		float execution_time = 0;
+		long start = 0;
+		float time = 0;
 		
 		LineIterator line_iter;
 		try {
 			line_iter = FileUtils.lineIterator(data_file);		
-			start_time = System.currentTimeMillis();
+			start = System.currentTimeMillis();
 			while (line_iter.hasNext()) {
 				line = line_iter.next();
 				boolean test = false;
-				
+
 				// check first char of line
 				try { if (line.charAt(0) == '{') test = true;
 				} catch (IndexOutOfBoundsException e) {}
 				
-				if ((line_number == lines_limit)) {
-					break;
-				} else if (test) { 
-					if (mode.equals("insert"))
+				if (line_number == lines_limit) {
+                    break;
+                } else if (test) { 
+					if (mode.equals("insert")) 
 						this.mongodb.insert(line);
-					else if (mode.equals("remove"))
-						this.mongodb.remove(line);
+					else if (mode.equals("remove")) 
+						this.mongodb.removeAll();
 					objects += 1;
 				}
+
 				line_number += 1;
 			}
-			line_iter.close(); // close to reset the iterator  
-			execution_time = System.currentTimeMillis() - start_time;
+			line_iter.close(); // reset the iterator by closing 
+			time = System.currentTimeMillis() - start;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		return new ArrayList<Float>(Arrays.asList(execution_time, objects));
+		return new ArrayList<Float>(Arrays.asList(time, objects));
 	}
 	
 	/**
@@ -113,12 +113,8 @@ public class IOTest extends DBTest
 	 * 			Data file path
 	 * @param res_path 
 	 * 			Results file path
-	 * @param slice 
-	 * 			Number of increments you wish to perform on the data file
-	 * 			e.g. when slice is 5, that means there will be 5 increments
-	 * 			starting initially at 20%, 40%, 60%... and finishing at 100%	
 	 */
-	public void test(String data_file, String res_path, int slice) 
+	public void test(String data_file, String res_path) 
 	{
 		FileManager file_manager = new FileManager();
 		ArrayList<Float> insert_res = new ArrayList<Float>();
@@ -134,19 +130,20 @@ public class IOTest extends DBTest
 			System.out.println("number of lines: " + num_lines);
 			
 			// perform test at different percentile grades
-			float incre = 100 / (float) slice;
-			for (float percent = incre; percent <= 100;  percent += incre) {
+			for (double percent = 0.1; percent <= 1;  percent += 0.1) {
 				int line_limit = (int) (num_lines * percent);
-				
-				System.out.println("Start test!");
+
+				System.out.println("");
+				System.out.println("");
+				System.out.println("");
 				
 				// INSERT
-				System.out.println("performing insert");
+				System.out.println("performing individual insert");
 				insert_res = executeIO(data_file, line_limit, "insert");
 				
 				// FSYNC (by sleeping for 2 minutes for good measure)
-				System.out.println("sleep for 2 minutes");
-				sleep(2); // sleep 2 minutes
+				/* System.out.println("sleep for 2 minutes"); */
+				/* sleep(2); // sleep 2 minutes */
 				
 				// REMOVE
 				System.out.println("performing remove all");
@@ -154,27 +151,25 @@ public class IOTest extends DBTest
 				
 				// calculate insert and remove per second
 				float objects = insert_res.get(1);
-				float inserted_per_msec = objects / insert_res.get(0);
-				float removed_per_msec = objects / remove_res.get(0);
+				float insert_rate = objects / insert_res.get(0);
+				float remove_rate = objects / remove_res.get(0);
 				
 				// display results
-				displayIOResults(
-						line_limit, 
+				displayIOResults(line_limit, 
 						insert_res, 
 						remove_res, 
-						inserted_per_msec,
-						removed_per_msec);
+						insert_rate,
+						remove_rate);
 				
 				// log results 
 				String[] csv_line = {
 						Float.toString(insert_res.get(1)), // objects tested
 						Float.toString(insert_res.get(0)), // insert time
 						Float.toString(remove_res.get(0)), // remove time
-						Float.toString(inserted_per_msec), // obj per sec
-						Float.toString(removed_per_msec), // obj per sec
+						Float.toString(insert_rate), // obj per sec
+						Float.toString(remove_rate), // obj per sec
 				};
 				file_manager.csvLogEvent(csv_line);
-				
 			}
 		} catch (NullPointerException e) {
 			System.out.println("error: " + e);
@@ -183,7 +178,6 @@ public class IOTest extends DBTest
 			System.out.println("error: " + e);
 		} finally {
 			file_manager.closeFileWriter();
-			this.mongodb.disconnect();
 		}
 	}
 	
@@ -192,13 +186,12 @@ public class IOTest extends DBTest
 	 * @param res_path
 	 * @param repeat
 	 */
-	public void run(String data_file, String res_path, int repeat, int slice) 
+	public void run(String data_file, String res_path, int repeat) 
 	{
 		for (int i = 1; i <= repeat; i++) {
 			System.out.println("Run number: " + Integer.toString(i));
-			this.test(data_file, 
-					res_path + "io_results_" + i + ".csv",
-					slice);
+			this.test(data_file, res_path + "io_results_" + i + ".csv");
 		}
+        this.mongodb.disconnect();
 	}
 }

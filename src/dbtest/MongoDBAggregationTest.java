@@ -11,7 +11,7 @@ import db.DBDetails;
 import db.mongodb.MongoDBClient;
 import db.mongodb.MongoDBTweetAggregation;
 
-public class AggregationTest extends DBTest 
+public class MongoDBAggregationTest extends MongoDBTest 
 {
 	// --- Fields ---
 	private MongoDBTweetAggregation mongodb;
@@ -26,7 +26,7 @@ public class AggregationTest extends DBTest
 	};
 	
 	// --- Constructors ---
-	public AggregationTest(DBDetails db_details)
+	public MongoDBAggregationTest(DBDetails db_details)
 	{
 		super(db_details);
 		MongoDBClient client = prepDB();
@@ -108,45 +108,58 @@ public class AggregationTest extends DBTest
 	public ArrayList<Float> executeAggregation(int mode) 
 	{
 		ArrayList<Float> results = new ArrayList<Float>();
-		float start_time = 0;
+		float start = 0; // start time
+		float time = 0;
 		
 		switch(mode) {
 			case 1:
 				System.out.println("map-reduce method");
 				
 				// most user mentions
-				start_time = System.currentTimeMillis();
+				System.out.println("Most User Mentions");
+				start = (float) System.currentTimeMillis();
 				displayMPQueryResults(this.mongodb.mapReduceUserMentions());
-				results.add((System.currentTimeMillis() - start_time) / 60000);
+				time = ((float) System.currentTimeMillis() - start) / 60000;
+				results.add(time);
 				
 				// most hash-tags
-				start_time = System.currentTimeMillis();
+				System.out.println("Most Hash Tags");
+				start = (float) System.currentTimeMillis();
 				displayMPQueryResults(this.mongodb.mapReduceHashTags());
-				results.add((System.currentTimeMillis() - start_time) / 60000);
+				time = ((float) System.currentTimeMillis() - start) / 60000;
+				results.add(time);
 				
 				// most shared urls 
-				start_time = System.currentTimeMillis();
+				System.out.println("Most Shared URLs");
+				start = (float) System.currentTimeMillis();
 				displayMPQueryResults(this.mongodb.mapReduceSharedUrls());
-				results.add((System.currentTimeMillis() - start_time) / 60000);
+				time = ((float) System.currentTimeMillis() - start) / 60000;
+				results.add(time);
 				
 				break;
 			case 2:
 				System.out.println("aggregate framework method");
 				
 				// most user mentions
-				start_time = System.currentTimeMillis();
+				System.out.println("Most User Mentions");
+				start = (float) System.currentTimeMillis();
 				displayAggreQueryResults(this.mongodb.aggregateUserMentions());
-				results.add((System.currentTimeMillis() - start_time) / 60000);
+				time = ((float) System.currentTimeMillis() - start) / 60000;
+				results.add(time);
 				
-				// most hast-tags
-				start_time = System.currentTimeMillis();
+				// most hash-tags
+				System.out.println("Most Hash Tags");
+				start = (float) System.currentTimeMillis();
 				displayAggreQueryResults(this.mongodb.aggregateHashTags());
-				results.add((System.currentTimeMillis() - start_time) / 60000);
+				time = ((float) System.currentTimeMillis() - start) / 60000;
+				results.add(time);
 				
 				// most shared urls
-				start_time = System.currentTimeMillis();
+				System.out.println("Most Shared URLs");
+				start = (float) System.currentTimeMillis();
 				displayAggreQueryResults(this.mongodb.aggregateSharedUrls());
-				results.add((System.currentTimeMillis() - start_time) / 60000);
+				time = ((float) System.currentTimeMillis() - start) / 60000;
+				results.add(time);
 				
 				break;
 		}

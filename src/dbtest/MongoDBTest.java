@@ -10,13 +10,13 @@ import java.io.InputStream;
 import db.DBDetails;
 import db.mongodb.MongoDBClient;
 
-public class DBTest
+public class MongoDBTest
 {
 	// --- Fields ---
 	private DBDetails db_details;
 	
 	// --- Constructors ---
-	public DBTest(DBDetails db_details) 
+	public MongoDBTest(DBDetails db_details) 
 	{
 		this.db_details = db_details;
 	}

@@ -12,7 +12,8 @@ public class MongoDBTweetFind
 	private DBCollection collection;
 	
 	// --- Constructors ---
-	public MongoDBTweetFind(MongoDBClient mongodb){
+	public MongoDBTweetFind(MongoDBClient mongodb)
+	{
 		this.mongodb = mongodb;
 		this.collection = mongodb.getCollection();
 	}
@@ -143,7 +144,8 @@ public class MongoDBTweetFind
 				unwind,
 				match,
 				group);
-		return (Integer) out.getCommandResult().get("count");
+		int count = (Integer) out.results().iterator().next().get("count");
+		return count;
 	}
 	
 	public long getCollectionCount() 
