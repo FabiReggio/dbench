@@ -148,8 +148,6 @@ public class MongoDBFindTest extends MongoDBTest {
 		for (String keyword : single_keywords) {
 			System.out.println("\n");
 			System.out.println("Testing Keyword: " + keyword);
-			// DUMMY RUN
-			executeFind(1, keyword);
 			
 			// REAL RUN 
 			regex_time = executeFind(1, keyword);
