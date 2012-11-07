@@ -1,4 +1,4 @@
-package dbtest;
+package dbtest.mongodb;
 
 import io.FileManager;
 
@@ -140,10 +140,6 @@ public class MongoDBIOTest extends MongoDBTest
 				// INSERT
 				System.out.println("performing individual insert");
 				insert_res = executeIO(data_file, line_limit, "insert");
-				
-				// FSYNC (by sleeping for 2 minutes for good measure)
-				/* System.out.println("sleep for 2 minutes"); */
-				/* sleep(2); // sleep 2 minutes */
 				
 				// REMOVE
 				System.out.println("performing remove all");

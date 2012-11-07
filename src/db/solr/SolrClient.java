@@ -97,7 +97,7 @@ public class SolrClient
 					    doc_list.clear();
 				    }
 				} catch (TwitterException e) {
-					System.out.println("Error bad tweet on line: " + count);
+					System.out.println("error! bad tweet on line: " + count);
 					bad_tweets_record.add(count);
 					bad_tweets++;
 				} 

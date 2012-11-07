@@ -1,15 +1,25 @@
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
+import org.apache.solr.common.SolrInputDocument;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import twitter4j.Status;
+import twitter4j.TwitterException;
+import twitter4j.json.DataObjectFactory;
 import unittests.MongoDBUnitTests;
 
 import db.DBDetails;
+import db.couchbase.CouchBaseClient;
 import db.mongodb.MongoDBClient;
 import db.solr.SolrClient;
-import dbtest.MongoDBFindTest;
-import dbtest.MongoDBIOTest;
-import dbtest.MongoDBAggregationTest;
+import dbtest.mongodb.MongoDBAggregationTest;
+import dbtest.mongodb.MongoDBFindTest;
+import dbtest.mongodb.MongoDBIOTest;
 
 /**
  * TestRunner as the name suggests is where the tests are executed from
@@ -52,15 +62,44 @@ public class TestRunner
 		String x = "/datadisk1/userContent/olympics3.jsonl";
 		String y = "/datadisk1/home/chris/twitter_data/100meters.json.test";
 		
-		DBDetails proj06 = new DBDetails(p6, db_port, db_name, io_col);
-		MongoDBIOTest io_test = new MongoDBIOTest(proj06);
-		io_test.run(y, "./", 5);
+		DBDetails proj06 = new DBDetails(p6, db_port, db_name, q_col);
+		DBDetails proj06_2 = new DBDetails(p6, 12345, db_name, q_col);
+//		MongoDBIOTest io_test = new MongoDBIOTest(proj06);
+//		io_test.run(y, "./", 5);
 
-		/* MongoDBAggregationTest aggre_test = new MongoDBAggregationTest(proj07); */
-		/* MongoDBFindTest find_test = new MongoDBFindTest(host_proj07); */
+		MongoDBAggregationTest aggre_test = new MongoDBAggregationTest(proj06_2); 
+		aggre_test.run("./", 5); 
 		
+		try {
+			Thread.sleep(60 * 1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		aggre_test = new MongoDBAggregationTest(proj06); 
+		aggre_test.run("./", 5); 
+		
+//		MongoDBFindTest find_test = new MongoDBFindTest(host_proj07);
 		/* find_test.run("./", 5); */
-		/* aggre_test.run("./", 5); */
+		
+//		CouchBaseClient couchbase = new CouchBaseClient();
+//		couchbase.connect("http://" + p6);
+		
+//		LineIterator line_iter;
+//		boolean test = false;
+//		try {
+//			line_iter = FileUtils.lineIterator(new File(x));
+//			while (line_iter.hasNext()) {
+//				String line = line_iter.next();
+//				
+//				// check first char of line
+//				try { if (line.charAt(0) == '{') test = true;
+//				} catch (IndexOutOfBoundsException e) {}
+//				
+//				if (test) 
+//					couchbase.insert(line);
+//			}
+//		} catch (IOException e) {
 		
 //		SolrClient solr = new SolrClient();
 //		solr.connect(local_host, 8983);

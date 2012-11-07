@@ -1,4 +1,4 @@
-package dbtest;
+package dbtest.mongodb;
 
 import java.util.ArrayList;
 
