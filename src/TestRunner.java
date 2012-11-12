@@ -1,3 +1,5 @@
+import static org.apache.commons.io.FileUtils.readFileToString;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -8,13 +10,16 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+import com.couchbase.client.protocol.views.Query;
+
 import twitter4j.Status;
 import twitter4j.TwitterException;
 import twitter4j.json.DataObjectFactory;
 import unittests.MongoDBUnitTests;
 
 import db.DBDetails;
-import db.couchbase.CouchBaseClient;
+import db.couchbase.CustomCouchbaseClient;
+import db.couchbase.CustomCouchbaseClient;
 import db.mongodb.MongoDBClient;
 import db.solr.SolrClient;
 import dbtest.mongodb.MongoDBAggregationTest;
@@ -62,26 +67,24 @@ public class TestRunner
 		String x = "/datadisk1/userContent/olympics3.jsonl";
 		String y = "/datadisk1/home/chris/twitter_data/100meters.json.test";
 		
-		CouchBaseClient couchbase = new CouchBaseClient();
-		couchbase.connect("http://" + p6);
-  	
-		LineIterator line_iter;
-		boolean test = false;
-		try {
-			line_iter = FileUtils.lineIterator(new File(x));
-			while (line_iter.hasNext()) {
-				String line = line_iter.next();
-				
-				// check first char of line
-				try { if (line.charAt(0) == '{') test = true;
-				} catch (IndexOutOfBoundsException e) {}
-				
-				if (test) 
-					couchbase.insert(line);
-			}
-		} catch (IOException e) {}
-		couchbase.disconnect();
+		CustomCouchbaseClient couchbase = new CustomCouchbaseClient();
+		couchbase.connect("http://" + p6, "db_tests");
 		
+		Query query = new Query();
+		query.setGroup(true);
+		
+		couchbase.queryView("db_tests", "most_hashed_tags", query);
+		
+//		String doc_path = "./config/couchbase/most_user_mentioned.json";
+//		String doc;
+//		try {
+//			doc = readFileToString(new File(doc_path)).replace("\n", "");
+//			System.out.println(doc);
+//			couchbase.loadDesignDoc(doc, "db_tests", "dev_test");
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+  	
 //		SolrClient solr = new SolrClient();
 //		solr.connect(local_host, 8983);
 //		solr.deleteAll();

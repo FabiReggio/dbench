@@ -1,0 +1,20 @@
+{
+	"language" : "javascript",
+	"views" : {
+		"dev_" : {
+			"map" : 
+				"function (doc) {
+					if (!doc.entities) { return; }
+				
+					doc.entities.hashtags.forEach(
+						function(hashtag) {
+							if (hashtag.text !== undefined) {
+								emit(hashtag.text, null);
+							}
+						}
+					)
+				}",
+			"reduce" : "_count"
+		}
+	}
+}

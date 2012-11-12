@@ -7,34 +7,43 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import net.spy.memcached.internal.OperationFuture;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import twitter4j.Status;
 import twitter4j.TwitterException;
 import twitter4j.json.DataObjectFactory;
 
 import com.couchbase.client.CouchbaseClient;
+import com.couchbase.client.protocol.views.Query;
+import com.couchbase.client.protocol.views.View;
+import com.couchbase.client.protocol.views.ViewResponse;
 
 
-
-public class CouchBaseClient 
+public class CustomCouchbaseClient 
 {
 	// --- Fields ---
 	private CouchbaseClient couchbase;
+	private String host_url;
+	private String port = "8091";
 	
 	// --- Constructors ---
-	public CouchBaseClient() {}
+	public CustomCouchbaseClient() {}
 	
 	// --- Methods ---
 	/**
 	 * Connect to CouchBase
 	 * @return
 	 */
-	public boolean connect(String host) 
+	public boolean connect(String host, String bucket) 
 	{
 		try {
 			List<URI> uri_list = new LinkedList<URI>();
-			uri_list.add(URI.create(host + ":8091/pools"));
+			this.host_url = host;
+			uri_list.add(URI.create(host + ":" + this.port + "/pools"));
 			couchbase = new CouchbaseClient(uri_list, "db_tests", "");
 		} catch (IOException e) {
 			System.err.println("error! cannot connect to couchbase!");
@@ -93,6 +102,47 @@ public class CouchBaseClient
 			return false;
 		}
 	}
+	
+	/**
+	 * Query view
+	 * @param view
+	 * @param query
+	 * @return
+	 */
+	public ViewResponse queryView(
+			String doc_name, 
+			String view_name, 
+			Query query) 
+	{
+		View view = this.couchbase.getView(doc_name, view_name);
+		if (view == null) return null;
+		
+		return this.couchbase.query(view, query);
+	}
+	
+	
+	public boolean loadDesignDoc(
+			String doc, 
+			String bucketname, 
+			String view_name) throws IOException
+	{
+		HttpClient httpclient = new DefaultHttpClient();
+		String put_url = this.host_url + ":" + "8092" + "/" 
+	    		+ bucketname
+	    		+ "/_design/" 
+	    		+ view_name; // use any one node in your cluster
+		System.out.println(put_url);
+	    HttpPut httpput = new HttpPut(put_url);
+
+	    StringEntity reqEntity = new StringEntity(doc);
+	    httpput.setEntity(reqEntity);
+	    HttpResponse response = httpclient.execute(httpput);
+	    System.out.println("View loading result:"  + response.getStatusLine());
+
+	    if (response.getStatusLine().getStatusCode() < 300) return true;
+	    else return false;
+	}
+	
 	
 	/**
 	 * Disconnect from CouchBase
