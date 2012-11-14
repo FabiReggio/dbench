@@ -2,6 +2,7 @@ package db.couchbase;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -18,9 +19,11 @@ import twitter4j.TwitterException;
 import twitter4j.json.DataObjectFactory;
 
 import com.couchbase.client.CouchbaseClient;
+import com.couchbase.client.CouchbaseConnectionFactory;
 import com.couchbase.client.protocol.views.Query;
 import com.couchbase.client.protocol.views.View;
 import com.couchbase.client.protocol.views.ViewResponse;
+import com.couchbase.client.protocol.views.ViewRow;
 
 
 public class CustomCouchbaseClient 
@@ -42,9 +45,12 @@ public class CustomCouchbaseClient
 	{
 		try {
 			List<URI> uri_list = new LinkedList<URI>();
-			this.host_url = host;
+			CouchbaseConnectionFactory cf;
+			
 			uri_list.add(URI.create(host + ":" + this.port + "/pools"));
-			couchbase = new CouchbaseClient(uri_list, "db_tests", "");
+			cf = new CouchbaseConnectionFactory(uri_list, bucket, "");
+			this.couchbase = new CouchbaseClient(cf);
+			this.host_url = host;
 		} catch (IOException e) {
 			System.err.println("error! cannot connect to couchbase!");
 			return false;
@@ -109,15 +115,25 @@ public class CustomCouchbaseClient
 	 * @param query
 	 * @return
 	 */
-	public ViewResponse queryView(
+	public boolean queryView(
 			String doc_name, 
 			String view_name, 
 			Query query) 
 	{
 		View view = this.couchbase.getView(doc_name, view_name);
-		if (view == null) return null;
+		if (view == null) return false;
 		
-		return this.couchbase.query(view, query);
+		ViewResponse result = this.couchbase.query(view, query);
+		
+		Iterator<ViewRow> itr = result.iterator();
+		ViewRow row;
+		row = itr.next();
+		if (row != null) {
+			System.out.println(String.format("ID is: %s", row.getId()));
+			System.out.println(String.format("Key is: %s", row.getKey()));          
+		}
+		
+		return true;
 	}
 	
 	

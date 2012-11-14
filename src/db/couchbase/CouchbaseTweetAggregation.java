@@ -56,49 +56,49 @@ public class CouchbaseTweetAggregation
 	 * Queries the most user mentioned
 	 * @return
 	 */
-	public LinkedHashMap<String, Integer> mostUserMentioned(
-			String doc_name, 
-			String view_name)
-	{
-		ViewResponse result = this.couchbase.queryView(
-				"_design", 
-				"most_user_mentioned", 
-				query);
-		
-		return sortHashMapByValues(covertHashMapValuesToInt(result.getMap()));
-	}
+//	public LinkedHashMap<String, Integer> mostUserMentioned(
+//			String doc_name, 
+//			String view_name)
+//	{
+//		ViewResponse result = this.couchbase.queryView(
+//				"_design", 
+//				"most_user_mentioned", 
+//				query);
+//		
+//		return sortHashMapByValues(covertHashMapValuesToInt(result.getMap()));
+//	}
 	
 	/**
 	 * Queries the most shared urls
 	 * @return
 	 */
-	public LinkedHashMap<String, Integer> mostSharedUrls(
-			String doc_name, 
-			String view_name)
-	{
-		ViewResponse result = this.couchbase.queryView(
-				"_design", 
-				"most_shared_urls", 
-				query);
-		
-		return sortHashMapByValues(covertHashMapValuesToInt(result.getMap()));
-	}
+//	public LinkedHashMap<String, Integer> mostSharedUrls(
+//			String doc_name, 
+//			String view_name)
+//	{
+//		ViewResponse result = this.couchbase.queryView(
+//				"_design", 
+//				"most_shared_urls", 
+//				query);
+//		
+//		return sortHashMapByValues(covertHashMapValuesToInt(result.getMap()));
+//	}
 	
-	/**
-	 * Queries the most hashed tags 
-	 * @return
-	 */
-	public LinkedHashMap<String, Integer> mostHashedTags(
-			String doc_name, 
-			String view_name)
-	{
-		ViewResponse result = this.couchbase.queryView(
-				"_design", 
-				"most_hashed_tags", 
-				query);
-		
-		return sortHashMapByValues(covertHashMapValuesToInt(result.getMap()));
-	}
+//	/**
+//	 * Queries the most hashed tags 
+//	 * @return
+//	 */
+//	public LinkedHashMap<String, Integer> mostHashedTags(
+//			String doc_name, 
+//			String view_name)
+//	{
+//		ViewResponse result = this.couchbase.queryView(
+//				"_design", 
+//				"most_hashed_tags", 
+//				query);
+//		
+//		return sortHashMapByValues(covertHashMapValuesToInt(result.getMap()));
+//	}
 	
 	/**
 	 * Converts the map values from type object to int

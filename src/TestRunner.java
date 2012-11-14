@@ -11,6 +11,7 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
 import com.couchbase.client.protocol.views.Query;
+import com.couchbase.client.protocol.views.ViewResponse;
 
 import twitter4j.Status;
 import twitter4j.TwitterException;
@@ -18,6 +19,7 @@ import twitter4j.json.DataObjectFactory;
 import unittests.MongoDBUnitTests;
 
 import db.DBDetails;
+import db.couchbase.CouchbaseTweetAggregation;
 import db.couchbase.CustomCouchbaseClient;
 import db.couchbase.CustomCouchbaseClient;
 import db.mongodb.MongoDBClient;
@@ -68,12 +70,14 @@ public class TestRunner
 		String y = "/datadisk1/home/chris/twitter_data/100meters.json.test";
 		
 		CustomCouchbaseClient couchbase = new CustomCouchbaseClient();
+		CouchbaseTweetAggregation aggre_test = new CouchbaseTweetAggregation(couchbase);
 		couchbase.connect("http://" + p6, "db_tests");
 		
 		Query query = new Query();
 		query.setGroup(true);
 		
 		couchbase.queryView("db_tests", "most_hashed_tags", query);
+		couchbase.disconnect();
 		
 //		String doc_path = "./config/couchbase/most_user_mentioned.json";
 //		String doc;
