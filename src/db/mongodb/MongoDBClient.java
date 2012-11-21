@@ -118,6 +118,22 @@ public class MongoDBClient
 			return false;
 		}
 	}
+	
+	public boolean insert(DBObject doc) 
+	{
+		try {
+			if (isCollectionSet()) {
+				this.collection.insert(doc);
+				return true;
+			} else {
+				System.out.println("error: collection hasn't been set yet");
+				return false;
+			}
+		} catch (MongoException e) {
+			System.out.println("error: " + e.toString());
+			return false;
+		}
+	}
 
 	/**
 	 * Insert a list of documents
@@ -157,6 +173,22 @@ public class MongoDBClient
 		try {
 			if (isCollectionSet()) {
 				this.collection.remove((DBObject) JSON.parse(data));
+				return true;
+			} else {
+				System.out.println("error: collection hasn't been set yet");
+				return false;
+			}
+		} catch (MongoException e) {
+			System.out.println("error: " + e.toString());
+			return false;
+		}
+	}
+	
+	public boolean remove(DBObject doc)
+	{
+		try {
+			if (isCollectionSet()) {
+				this.collection.remove(doc);
 				return true;
 			} else {
 				System.out.println("error: collection hasn't been set yet");

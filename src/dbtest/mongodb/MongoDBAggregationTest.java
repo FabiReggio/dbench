@@ -77,7 +77,7 @@ public class MongoDBAggregationTest extends MongoDBTest
 			float shared_urls_atime)
 	{
 		System.out.println("-------------- Results -----------------");
-		System.out.printf("objects queried: %d \n", objects);
+		System.out.printf("objects aggregated: %d \n", objects);
 		System.out.println("-------------- Map-Reduce ---------------");
 		System.out.printf("user mentions: %f mins \n", user_mentions_mptime);
 		System.out.printf("hash tags: %f mins \n", hash_tags_mptime);
