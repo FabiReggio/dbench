@@ -44,6 +44,8 @@ public class CouchbaseAggregationTest
             System.out.println(key + ":" + value);
             count++;
         }
+		System.out.println("----------------------------------------");
+		System.out.println("");
 	}
 
 	/**

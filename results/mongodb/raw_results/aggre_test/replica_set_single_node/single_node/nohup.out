@@ -1,0 +1,505 @@
+Buildfile: /cs/home/cc218/dbench/build.xml
+
+download-ivy:
+      [get] Getting: http://repo2.maven.org/maven2/org/apache/ivy/ivy/2.1.0-rc2/ivy-2.1.0-rc2.jar
+      [get] To: /cs/home/cc218/.ant/lib/ivy.jar
+      [get] Not modified - so not downloaded
+
+init-ivy:
+
+-init:
+
+retrieve:
+[ivy:retrieve] :: Ivy 2.1.0-rc2 - 20090704004254 :: http://ant.apache.org/ivy/ ::
+[ivy:retrieve] :: loading settings :: url = jar:file:/cs/home/cc218/.ant/lib/ivy.jar!/org/apache/ivy/core/settings/ivysettings.xml
+[ivy:retrieve] :: resolving dependencies :: University of St. Andrews#;0.1
+[ivy:retrieve] 	confs: [default]
+[ivy:retrieve] 	found commons-io#commons-io;2.4 in public
+[ivy:retrieve] 	found commons-lang#commons-lang;2.6 in public
+[ivy:retrieve] 	found org.codehaus.jackson#jackson-core-asl;1.9.9 in public
+[ivy:retrieve] 	found mysql#mysql-connector-java;5.1.19 in public
+[ivy:retrieve] 	found org.mongodb#mongo-java-driver;2.9.1 in public
+[ivy:retrieve] 	found org.jongo#jongo;0.2 in public
+[ivy:retrieve] 	found com.fasterxml.jackson.core#jackson-core;2.0.2 in public
+[ivy:retrieve] 	found com.fasterxml.jackson.core#jackson-databind;2.0.2 in public
+[ivy:retrieve] 	found com.fasterxml.jackson.core#jackson-annotations;2.0.2 in public
+[ivy:retrieve] 	found org.mongodb#mongo-java-driver;2.9.3 in public
+[ivy:retrieve] 	[2.9.3] org.mongodb#mongo-java-driver;[2.6.5,)
+[ivy:retrieve] 	found org.twitter4j#twitter4j-core;2.2.6 in public
+[ivy:retrieve] 	found org.slf4j#slf4j-api;1.5.8 in public
+[ivy:retrieve] 	found commons-logging#commons-logging-api;1.1 in public
+[ivy:retrieve] 	found log4j#log4j;1.2.17 in public
+[ivy:retrieve] 	[1.2.17] log4j#log4j;[1.2.9,)
+[ivy:retrieve] 	found org.apache.openejb#javaee-api;5.0-2 in public
+[ivy:retrieve] 	found junit#junit;4.10 in public
+[ivy:retrieve] 	found org.hamcrest#hamcrest-core;1.1 in public
+[ivy:retrieve] 	found org.apache.solr#solr-solrj;4.0.0-BETA in public
+[ivy:retrieve] 	found org.apache.zookeeper#zookeeper;3.3.6 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpmime;4.1.3 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpcore;4.1.4 in public
+[ivy:retrieve] 	found commons-logging#commons-logging;1.1.1 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpclient;4.1.3 in public
+[ivy:retrieve] 	found commons-codec#commons-codec;1.6 in public
+[ivy:retrieve] 	found org.slf4j#slf4j-api;1.6.4 in public
+[ivy:retrieve] 	found org.codehaus.woodstox#wstx-asl;3.2.7 in public
+[ivy:retrieve] 	found org.slf4j#log4j-over-slf4j;1.6.4 in public
+[ivy:retrieve] 	found org.slf4j#jcl-over-slf4j;1.6.4 in public
+[ivy:retrieve] 	found org.slf4j#slf4j-simple;1.6.6 in public
+[ivy:retrieve] 	found org.slf4j#slf4j-api;1.6.6 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpclient;4.2.1 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpcore;4.2.1 in public
+[ivy:retrieve] :: resolution report :: resolve 4917ms :: artifacts dl 314ms
+[ivy:retrieve] 	:: evicted modules:
+[ivy:retrieve] 	org.mongodb#mongo-java-driver;2.9.1 by [org.mongodb#mongo-java-driver;2.9.3] in [default]
+[ivy:retrieve] 	org.slf4j#slf4j-api;1.5.8 by [org.slf4j#slf4j-api;1.6.4] in [default]
+[ivy:retrieve] 	org.apache.httpcomponents#httpcore;4.1.4 by [org.apache.httpcomponents#httpcore;4.2.1] in [default]
+[ivy:retrieve] 	commons-io#commons-io;2.1 by [commons-io#commons-io;2.4] in [default]
+[ivy:retrieve] 	org.apache.httpcomponents#httpclient;4.1.3 by [org.apache.httpcomponents#httpclient;4.2.1] in [default]
+[ivy:retrieve] 	org.slf4j#slf4j-api;1.6.4 by [org.slf4j#slf4j-api;1.6.6] in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   33  |   2   |   0   |   6   ||   45  |   0   |
+	---------------------------------------------------------------------
+[ivy:retrieve] :: retrieving :: University of St. Andrews#
+[ivy:retrieve] 	confs: [default]
+[ivy:retrieve] 	0 artifacts copied, 45 already retrieved (0kB/109ms)
+
+compile:
+    [javac] Compiling 2 source files to /cs/home/cc218/dbench/build
+
+run:
+     [java] connected to the MongoDB
+     [java] Run number: 1
+     [java] 12-Nov-2012 15:06:42 com.mongodb.DBTCPConnector initDirectConnection
+     [java] WARNING: Exception executing isMaster command on e-research.cs.st-andrews.ac.uk/138.251.214.35:27017
+     [java] java.io.IOException: couldn't connect to [e-research.cs.st-andrews.ac.uk/138.251.214.35:27017] bc:java.net.NoRouteToHostException: No route to host
+     [java] 	at com.mongodb.DBPort._open(DBPort.java:214)
+     [java] 	at com.mongodb.DBPort.go(DBPort.java:107)
+     [java] 	at com.mongodb.DBPort.go(DBPort.java:88)
+     [java] 	at com.mongodb.DBPort.findOne(DBPort.java:143)
+     [java] 	at com.mongodb.DBPort.runCommand(DBPort.java:148)
+     [java] 	at com.mongodb.DBTCPConnector.initDirectConnection(DBTCPConnector.java:539)
+     [java] 	at com.mongodb.DBTCPConnector.checkMaster(DBTCPConnector.java:518)
+     [java] 	at com.mongodb.DBTCPConnector.call(DBTCPConnector.java:266)
+     [java] 	at com.mongodb.DBApiLayer$MyCollection.__find(DBApiLayer.java:289)
+     [java] 	at com.mongodb.DB.command(DB.java:259)
+     [java] 	at com.mongodb.DB.command(DB.java:241)
+     [java] 	at com.mongodb.DBCollection.getCount(DBCollection.java:967)
+     [java] 	at com.mongodb.DBCollection.getCount(DBCollection.java:938)
+     [java] 	at com.mongodb.DBCollection.getCount(DBCollection.java:913)
+     [java] 	at com.mongodb.DBCollection.count(DBCollection.java:850)
+     [java] 	at db.mongodb.MongoDBClient.getCollectionCount(MongoDBClient.java:330)
+     [java] 	at db.mongodb.MongoDBTweetAggregation.getCollectionCount(MongoDBTweetAggregation.java:252)
+     [java] 	at dbtest.mongodb.MongoDBAggregationTest.test(MongoDBAggregationTest.java:187)
+     [java] 	at dbtest.mongodb.MongoDBAggregationTest.run(MongoDBAggregationTest.java:238)
+     [java] 	at TestRunner.main(TestRunner.java:68)
+     [java] 12-Nov-2012 15:06:42 com.mongodb.DBPortPool gotError
+     [java] WARNING: emptying DBPortPool to e-research.cs.st-andrews.ac.uk/138.251.214.35:27017 b/c of error
+     [java] java.io.IOException: couldn't connect to [e-research.cs.st-andrews.ac.uk/138.251.214.35:27017] bc:java.net.NoRouteToHostException: No route to host
+     [java] 	at com.mongodb.DBPort._open(DBPort.java:214)
+     [java] 	at com.mongodb.DBPort.go(DBPort.java:107)
+     [java] 	at com.mongodb.DBPort.call(DBPort.java:74)
+     [java] 	at com.mongodb.DBTCPConnector.call(DBTCPConnector.java:275)
+     [java] 	at com.mongodb.DBApiLayer$MyCollection.__find(DBApiLayer.java:289)
+     [java] 	at com.mongodb.DB.command(DB.java:259)
+     [java] 	at com.mongodb.DB.command(DB.java:241)
+     [java] 	at com.mongodb.DBCollection.getCount(DBCollection.java:967)
+     [java] 	at com.mongodb.DBCollection.getCount(DBCollection.java:938)
+     [java] 	at com.mongodb.DBCollection.getCount(DBCollection.java:913)
+     [java] 	at com.mongodb.DBCollection.count(DBCollection.java:850)
+     [java] 	at db.mongodb.MongoDBClient.getCollectionCount(MongoDBClient.java:330)
+     [java] 	at db.mongodb.MongoDBTweetAggregation.getCollectionCount(MongoDBTweetAggregation.java:252)
+     [java] 	at dbtest.mongodb.MongoDBAggregationTest.test(MongoDBAggregationTest.java:187)
+     [java] 	at dbtest.mongodb.MongoDBAggregationTest.run(MongoDBAggregationTest.java:238)
+     [java] 	at TestRunner.main(TestRunner.java:68)
+     [java] Exception in thread "main" com.mongodb.MongoException$Network: can't call something : e-research.cs.st-andrews.ac.uk/138.251.214.35:27017/db_tests
+     [java] 	at com.mongodb.DBTCPConnector.call(DBTCPConnector.java:284)
+     [java] 	at com.mongodb.DBApiLayer$MyCollection.__find(DBApiLayer.java:289)
+     [java] 	at com.mongodb.DB.command(DB.java:259)
+     [java] 	at com.mongodb.DB.command(DB.java:241)
+     [java] 	at com.mongodb.DBCollection.getCount(DBCollection.java:967)
+     [java] 	at com.mongodb.DBCollection.getCount(DBCollection.java:938)
+     [java] 	at com.mongodb.DBCollection.getCount(DBCollection.java:913)
+     [java] 	at com.mongodb.DBCollection.count(DBCollection.java:850)
+     [java] 	at db.mongodb.MongoDBClient.getCollectionCount(MongoDBClient.java:330)
+     [java] 	at db.mongodb.MongoDBTweetAggregation.getCollectionCount(MongoDBTweetAggregation.java:252)
+     [java] 	at dbtest.mongodb.MongoDBAggregationTest.test(MongoDBAggregationTest.java:187)
+     [java] 	at dbtest.mongodb.MongoDBAggregationTest.run(MongoDBAggregationTest.java:238)
+     [java] 	at TestRunner.main(TestRunner.java:68)
+     [java] Caused by: java.io.IOException: couldn't connect to [e-research.cs.st-andrews.ac.uk/138.251.214.35:27017] bc:java.net.NoRouteToHostException: No route to host
+     [java] 	at com.mongodb.DBPort._open(DBPort.java:214)
+     [java] 	at com.mongodb.DBPort.go(DBPort.java:107)
+     [java] 	at com.mongodb.DBPort.call(DBPort.java:74)
+     [java] 	at com.mongodb.DBTCPConnector.call(DBTCPConnector.java:275)
+     [java] 	... 12 more
+     [java] Java Result: 1
+
+BUILD SUCCESSFUL
+Total time: 14 seconds
+Buildfile: /cs/home/cc218/dbench/build.xml
+
+download-ivy:
+      [get] Getting: http://repo2.maven.org/maven2/org/apache/ivy/ivy/2.1.0-rc2/ivy-2.1.0-rc2.jar
+      [get] To: /cs/home/cc218/.ant/lib/ivy.jar
+      [get] Not modified - so not downloaded
+
+init-ivy:
+
+-init:
+
+retrieve:
+[ivy:retrieve] :: Ivy 2.1.0-rc2 - 20090704004254 :: http://ant.apache.org/ivy/ ::
+[ivy:retrieve] :: loading settings :: url = jar:file:/cs/home/cc218/.ant/lib/ivy.jar!/org/apache/ivy/core/settings/ivysettings.xml
+[ivy:retrieve] :: resolving dependencies :: University of St. Andrews#;0.1
+[ivy:retrieve] 	confs: [default]
+[ivy:retrieve] 	found commons-io#commons-io;2.4 in public
+[ivy:retrieve] 	found commons-lang#commons-lang;2.6 in public
+[ivy:retrieve] 	found org.codehaus.jackson#jackson-core-asl;1.9.9 in public
+[ivy:retrieve] 	found mysql#mysql-connector-java;5.1.19 in public
+[ivy:retrieve] 	found org.mongodb#mongo-java-driver;2.9.1 in public
+[ivy:retrieve] 	found org.jongo#jongo;0.2 in public
+[ivy:retrieve] 	found com.fasterxml.jackson.core#jackson-core;2.0.2 in public
+[ivy:retrieve] 	found com.fasterxml.jackson.core#jackson-databind;2.0.2 in public
+[ivy:retrieve] 	found com.fasterxml.jackson.core#jackson-annotations;2.0.2 in public
+[ivy:retrieve] 	found org.mongodb#mongo-java-driver;2.9.3 in public
+[ivy:retrieve] 	[2.9.3] org.mongodb#mongo-java-driver;[2.6.5,)
+[ivy:retrieve] 	found org.twitter4j#twitter4j-core;2.2.6 in public
+[ivy:retrieve] 	found org.slf4j#slf4j-api;1.5.8 in public
+[ivy:retrieve] 	found commons-logging#commons-logging-api;1.1 in public
+[ivy:retrieve] 	found log4j#log4j;1.2.17 in public
+[ivy:retrieve] 	[1.2.17] log4j#log4j;[1.2.9,)
+[ivy:retrieve] 	found org.apache.openejb#javaee-api;5.0-2 in public
+[ivy:retrieve] 	found junit#junit;4.10 in public
+[ivy:retrieve] 	found org.hamcrest#hamcrest-core;1.1 in public
+[ivy:retrieve] 	found org.apache.solr#solr-solrj;4.0.0-BETA in public
+[ivy:retrieve] 	found org.apache.zookeeper#zookeeper;3.3.6 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpmime;4.1.3 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpcore;4.1.4 in public
+[ivy:retrieve] 	found commons-logging#commons-logging;1.1.1 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpclient;4.1.3 in public
+[ivy:retrieve] 	found commons-codec#commons-codec;1.6 in public
+[ivy:retrieve] 	found org.slf4j#slf4j-api;1.6.4 in public
+[ivy:retrieve] 	found org.codehaus.woodstox#wstx-asl;3.2.7 in public
+[ivy:retrieve] 	found org.slf4j#log4j-over-slf4j;1.6.4 in public
+[ivy:retrieve] 	found org.slf4j#jcl-over-slf4j;1.6.4 in public
+[ivy:retrieve] 	found org.slf4j#slf4j-simple;1.6.6 in public
+[ivy:retrieve] 	found org.slf4j#slf4j-api;1.6.6 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpclient;4.2.1 in public
+[ivy:retrieve] 	found org.apache.httpcomponents#httpcore;4.2.1 in public
+[ivy:retrieve] :: resolution report :: resolve 2857ms :: artifacts dl 224ms
+[ivy:retrieve] 	:: evicted modules:
+[ivy:retrieve] 	org.mongodb#mongo-java-driver;2.9.1 by [org.mongodb#mongo-java-driver;2.9.3] in [default]
+[ivy:retrieve] 	org.slf4j#slf4j-api;1.5.8 by [org.slf4j#slf4j-api;1.6.4] in [default]
+[ivy:retrieve] 	org.apache.httpcomponents#httpcore;4.1.4 by [org.apache.httpcomponents#httpcore;4.2.1] in [default]
+[ivy:retrieve] 	commons-io#commons-io;2.1 by [commons-io#commons-io;2.4] in [default]
+[ivy:retrieve] 	org.apache.httpcomponents#httpclient;4.1.3 by [org.apache.httpcomponents#httpclient;4.2.1] in [default]
+[ivy:retrieve] 	org.slf4j#slf4j-api;1.6.4 by [org.slf4j#slf4j-api;1.6.6] in [default]
+	---------------------------------------------------------------------
+	|                  |            modules            ||   artifacts   |
+	|       conf       | number| search|dwnlded|evicted|| number|dwnlded|
+	---------------------------------------------------------------------
+	|      default     |   33  |   2   |   0   |   6   ||   45  |   0   |
+	---------------------------------------------------------------------
+[ivy:retrieve] :: retrieving :: University of St. Andrews#
+[ivy:retrieve] 	confs: [default]
+[ivy:retrieve] 	0 artifacts copied, 45 already retrieved (0kB/91ms)
+
+compile:
+
+run:
+     [java] connected to the MongoDB
+     [java] Run number: 1
+     [java] map-reduce method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "value" : { "count" : 253025.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 160735.0}}
+     [java] { "_id" : "NBCOlympics" , "value" : { "count" : 150401.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 139170.0}}
+     [java] { "_id" : "TomDaley1994" , "value" : { "count" : 137122.0}}
+     [java] { "_id" : "NiallOfficial" , "value" : { "count" : 117157.0}}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "value" : { "count" : 4787756.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 4379927.0}}
+     [java] { "_id" : "olympics" , "value" : { "count" : 2253754.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 1827310.0}}
+     [java] { "_id" : "london2012" , "value" : { "count" : 1804891.0}}
+     [java] { "_id" : "teamGB" , "value" : { "count" : 516038.0}}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "value" : { "count" : 45377.0}}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "value" : { "count" : 17179.0}}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "value" : { "count" : 13564.0}}
+     [java] { "_id" : "http://x.co/mStO" , "value" : { "count" : 11448.0}}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "value" : { "count" : 11264.0}}
+     [java] { "_id" : "http://x.co/mStG" , "value" : { "count" : 11133.0}}
+     [java] aggregate framework method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "count" : 253025}
+     [java] { "_id" : "TeamGB" , "count" : 160735}
+     [java] { "_id" : "NBCOlympics" , "count" : 150401}
+     [java] { "_id" : "Olympics" , "count" : 139170}
+     [java] { "_id" : "TomDaley1994" , "count" : 137122}
+     [java] { "_id" : "NiallOfficial" , "count" : 117157}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "count" : 4787756}
+     [java] { "_id" : "Olympics" , "count" : 4379927}
+     [java] { "_id" : "olympics" , "count" : 2253754}
+     [java] { "_id" : "TeamGB" , "count" : 1827310}
+     [java] { "_id" : "london2012" , "count" : 1804891}
+     [java] { "_id" : "teamGB" , "count" : 516038}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "count" : 45377}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "count" : 17179}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "count" : 13564}
+     [java] { "_id" : "http://x.co/mStO" , "count" : 11448}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "count" : 11264}
+     [java] { "_id" : "http://x.co/mStG" , "count" : 11133}
+     [java] -------------- Results -----------------
+     [java] objects queried: 15904861 
+     [java] -------------- Map-Reduce ---------------
+     [java] user mentions: 56.797867 mins 
+     [java] hash tags: 24.029867 mins 
+     [java] shared urls: 6.553600 mins 
+     [java] ----------- Aggregate Framework ---------
+     [java] user mentions: 4.369067 mins 
+     [java] hash tags: 6.553600 mins 
+     [java] shared urls: 4.369067 mins 
+     [java] ----------------------------------------
+     [java] 
+     [java] 
+     [java] Run number: 2
+     [java] map-reduce method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "value" : { "count" : 253025.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 160735.0}}
+     [java] { "_id" : "NBCOlympics" , "value" : { "count" : 150401.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 139170.0}}
+     [java] { "_id" : "TomDaley1994" , "value" : { "count" : 137122.0}}
+     [java] { "_id" : "NiallOfficial" , "value" : { "count" : 117157.0}}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "value" : { "count" : 4787756.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 4379927.0}}
+     [java] { "_id" : "olympics" , "value" : { "count" : 2253754.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 1827310.0}}
+     [java] { "_id" : "london2012" , "value" : { "count" : 1804891.0}}
+     [java] { "_id" : "teamGB" , "value" : { "count" : 516038.0}}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "value" : { "count" : 45377.0}}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "value" : { "count" : 17179.0}}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "value" : { "count" : 13564.0}}
+     [java] { "_id" : "http://x.co/mStO" , "value" : { "count" : 11448.0}}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "value" : { "count" : 11264.0}}
+     [java] { "_id" : "http://x.co/mStG" , "value" : { "count" : 11133.0}}
+     [java] aggregate framework method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "count" : 253025}
+     [java] { "_id" : "TeamGB" , "count" : 160735}
+     [java] { "_id" : "NBCOlympics" , "count" : 150401}
+     [java] { "_id" : "Olympics" , "count" : 139170}
+     [java] { "_id" : "TomDaley1994" , "count" : 137122}
+     [java] { "_id" : "NiallOfficial" , "count" : 117157}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "count" : 4787756}
+     [java] { "_id" : "Olympics" , "count" : 4379927}
+     [java] { "_id" : "olympics" , "count" : 2253754}
+     [java] { "_id" : "TeamGB" , "count" : 1827310}
+     [java] { "_id" : "london2012" , "count" : 1804891}
+     [java] { "_id" : "teamGB" , "count" : 516038}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "count" : 45377}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "count" : 17179}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "count" : 13564}
+     [java] { "_id" : "http://x.co/mStO" , "count" : 11448}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "count" : 11264}
+     [java] { "_id" : "http://x.co/mStG" , "count" : 11133}
+     [java] -------------- Results -----------------
+     [java] objects queried: 15904861 
+     [java] -------------- Map-Reduce ---------------
+     [java] user mentions: 13.107200 mins 
+     [java] hash tags: 21.845333 mins 
+     [java] shared urls: 6.553600 mins 
+     [java] ----------- Aggregate Framework ---------
+     [java] user mentions: 4.369067 mins 
+     [java] hash tags: 6.553600 mins 
+     [java] shared urls: 4.369067 mins 
+     [java] ----------------------------------------
+     [java] 
+     [java] 
+     [java] Run number: 3
+     [java] map-reduce method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "value" : { "count" : 253025.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 160735.0}}
+     [java] { "_id" : "NBCOlympics" , "value" : { "count" : 150401.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 139170.0}}
+     [java] { "_id" : "TomDaley1994" , "value" : { "count" : 137122.0}}
+     [java] { "_id" : "NiallOfficial" , "value" : { "count" : 117157.0}}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "value" : { "count" : 4787756.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 4379927.0}}
+     [java] { "_id" : "olympics" , "value" : { "count" : 2253754.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 1827310.0}}
+     [java] { "_id" : "london2012" , "value" : { "count" : 1804891.0}}
+     [java] { "_id" : "teamGB" , "value" : { "count" : 516038.0}}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "value" : { "count" : 45377.0}}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "value" : { "count" : 17179.0}}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "value" : { "count" : 13564.0}}
+     [java] { "_id" : "http://x.co/mStO" , "value" : { "count" : 11448.0}}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "value" : { "count" : 11264.0}}
+     [java] { "_id" : "http://x.co/mStG" , "value" : { "count" : 11133.0}}
+     [java] aggregate framework method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "count" : 253025}
+     [java] { "_id" : "TeamGB" , "count" : 160735}
+     [java] { "_id" : "NBCOlympics" , "count" : 150401}
+     [java] { "_id" : "Olympics" , "count" : 139170}
+     [java] { "_id" : "TomDaley1994" , "count" : 137122}
+     [java] { "_id" : "NiallOfficial" , "count" : 117157}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "count" : 4787756}
+     [java] { "_id" : "Olympics" , "count" : 4379927}
+     [java] { "_id" : "olympics" , "count" : 2253754}
+     [java] { "_id" : "TeamGB" , "count" : 1827310}
+     [java] { "_id" : "london2012" , "count" : 1804891}
+     [java] { "_id" : "teamGB" , "count" : 516038}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "count" : 45377}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "count" : 17179}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "count" : 13564}
+     [java] { "_id" : "http://x.co/mStO" , "count" : 11448}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "count" : 11264}
+     [java] { "_id" : "http://x.co/mStG" , "count" : 11133}
+     [java] -------------- Results -----------------
+     [java] objects queried: 15904861 
+     [java] -------------- Map-Reduce ---------------
+     [java] user mentions: 13.107200 mins 
+     [java] hash tags: 21.845333 mins 
+     [java] shared urls: 6.553600 mins 
+     [java] ----------- Aggregate Framework ---------
+     [java] user mentions: 4.369067 mins 
+     [java] hash tags: 6.553600 mins 
+     [java] shared urls: 4.369067 mins 
+     [java] ----------------------------------------
+     [java] 
+     [java] 
+     [java] Run number: 4
+     [java] map-reduce method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "value" : { "count" : 253025.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 160735.0}}
+     [java] { "_id" : "NBCOlympics" , "value" : { "count" : 150401.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 139170.0}}
+     [java] { "_id" : "TomDaley1994" , "value" : { "count" : 137122.0}}
+     [java] { "_id" : "NiallOfficial" , "value" : { "count" : 117157.0}}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "value" : { "count" : 4787756.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 4379927.0}}
+     [java] { "_id" : "olympics" , "value" : { "count" : 2253754.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 1827310.0}}
+     [java] { "_id" : "london2012" , "value" : { "count" : 1804891.0}}
+     [java] { "_id" : "teamGB" , "value" : { "count" : 516038.0}}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "value" : { "count" : 45377.0}}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "value" : { "count" : 17179.0}}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "value" : { "count" : 13564.0}}
+     [java] { "_id" : "http://x.co/mStO" , "value" : { "count" : 11448.0}}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "value" : { "count" : 11264.0}}
+     [java] { "_id" : "http://x.co/mStG" , "value" : { "count" : 11133.0}}
+     [java] aggregate framework method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "count" : 253025}
+     [java] { "_id" : "TeamGB" , "count" : 160735}
+     [java] { "_id" : "NBCOlympics" , "count" : 150401}
+     [java] { "_id" : "Olympics" , "count" : 139170}
+     [java] { "_id" : "TomDaley1994" , "count" : 137122}
+     [java] { "_id" : "NiallOfficial" , "count" : 117157}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "count" : 4787756}
+     [java] { "_id" : "Olympics" , "count" : 4379927}
+     [java] { "_id" : "olympics" , "count" : 2253754}
+     [java] { "_id" : "TeamGB" , "count" : 1827310}
+     [java] { "_id" : "london2012" , "count" : 1804891}
+     [java] { "_id" : "teamGB" , "count" : 516038}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "count" : 45377}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "count" : 17179}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "count" : 13564}
+     [java] { "_id" : "http://x.co/mStO" , "count" : 11448}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "count" : 11264}
+     [java] { "_id" : "http://x.co/mStG" , "count" : 11133}
+     [java] -------------- Results -----------------
+     [java] objects queried: 15904861 
+     [java] -------------- Map-Reduce ---------------
+     [java] user mentions: 13.107200 mins 
+     [java] hash tags: 19.660801 mins 
+     [java] shared urls: 8.738133 mins 
+     [java] ----------- Aggregate Framework ---------
+     [java] user mentions: 4.369067 mins 
+     [java] hash tags: 6.553600 mins 
+     [java] shared urls: 2.184533 mins 
+     [java] ----------------------------------------
+     [java] 
+     [java] 
+     [java] Run number: 5
+     [java] map-reduce method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "value" : { "count" : 253025.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 160735.0}}
+     [java] { "_id" : "NBCOlympics" , "value" : { "count" : 150401.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 139170.0}}
+     [java] { "_id" : "TomDaley1994" , "value" : { "count" : 137122.0}}
+     [java] { "_id" : "NiallOfficial" , "value" : { "count" : 117157.0}}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "value" : { "count" : 4787756.0}}
+     [java] { "_id" : "Olympics" , "value" : { "count" : 4379927.0}}
+     [java] { "_id" : "olympics" , "value" : { "count" : 2253754.0}}
+     [java] { "_id" : "TeamGB" , "value" : { "count" : 1827310.0}}
+     [java] { "_id" : "london2012" , "value" : { "count" : 1804891.0}}
+     [java] { "_id" : "teamGB" , "value" : { "count" : 516038.0}}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "value" : { "count" : 45377.0}}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "value" : { "count" : 17179.0}}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "value" : { "count" : 13564.0}}
+     [java] { "_id" : "http://x.co/mStO" , "value" : { "count" : 11448.0}}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "value" : { "count" : 11264.0}}
+     [java] { "_id" : "http://x.co/mStG" , "value" : { "count" : 11133.0}}
+     [java] aggregate framework method
+     [java] Most User Mentions
+     [java] { "_id" : "London2012" , "count" : 253025}
+     [java] { "_id" : "TeamGB" , "count" : 160735}
+     [java] { "_id" : "NBCOlympics" , "count" : 150401}
+     [java] { "_id" : "Olympics" , "count" : 139170}
+     [java] { "_id" : "TomDaley1994" , "count" : 137122}
+     [java] { "_id" : "NiallOfficial" , "count" : 117157}
+     [java] Most Hash Tags
+     [java] { "_id" : "London2012" , "count" : 4787756}
+     [java] { "_id" : "Olympics" , "count" : 4379927}
+     [java] { "_id" : "olympics" , "count" : 2253754}
+     [java] { "_id" : "TeamGB" , "count" : 1827310}
+     [java] { "_id" : "london2012" , "count" : 1804891}
+     [java] { "_id" : "teamGB" , "count" : 516038}
+     [java] Most Shared URLs
+     [java] { "_id" :  null  , "count" : 45377}
+     [java] { "_id" : "http://instagr.am/p/ONDf_qoPYZ/" , "count" : 17179}
+     [java] { "_id" : "http://l2012.cm/7JLynq" , "count" : 13564}
+     [java] { "_id" : "http://x.co/mStO" , "count" : 11448}
+     [java] { "_id" : "http://on.cnn.com/N8YGkJ" , "count" : 11264}
+     [java] { "_id" : "http://x.co/mStG" , "count" : 11133}
+     [java] -------------- Results -----------------
+     [java] objects queried: 15904861 
+     [java] -------------- Map-Reduce ---------------
+     [java] user mentions: 13.107200 mins 
+     [java] hash tags: 21.845333 mins 
+     [java] shared urls: 8.738133 mins 
+     [java] ----------- Aggregate Framework ---------
+     [java] user mentions: 4.369067 mins 
+     [java] hash tags: 6.553600 mins 
+     [java] shared urls: 2.184533 mins 
+     [java] ----------------------------------------
+     [java] 
+     [java] 
+
+BUILD SUCCESSFUL
+Total time: 327 minutes 44 seconds

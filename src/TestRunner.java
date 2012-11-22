@@ -91,7 +91,7 @@ public class TestRunner
 		String data_file = "../data/olympics3.jsonl";
 
 	    CouchbaseAggregationTest couchbase = new CouchbaseAggregationTest(
-	            "http://" + avoss, 
+	            "http://" + p7, 
 	            "db_tests");
 	    couchbase.run("./", 5);
 
