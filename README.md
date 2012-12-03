@@ -1,4 +1,4 @@
-**dbench**
+# dbench
 dbench is a rudimentary database benchmarker. The benchmarks implemented is geared towards analyzing the the performance of aggregating _twitter data_. So far we support:
 
 - MongoDB
