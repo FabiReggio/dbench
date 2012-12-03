@@ -45,12 +45,14 @@ var reduce = function(key, values) {
     return result;
 };
 
+time();
 result = db.runCommand({
 	"mapreduce" : "query_test_collection",
 	"map" : map,
 	"reduce" : reduce,
 	"out" : "user_mentions"
 });
+time();
 
 db.user_mentions.find({}).sort({ "value.count" : -1});
 

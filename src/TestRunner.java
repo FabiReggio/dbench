@@ -55,7 +55,7 @@ public class TestRunner
         }
     }	
 	
-	public void aggregationTest(
+	public static void aggregationTest(
 			String type, 
 			String host, 
 			String db_name, 
@@ -90,12 +90,17 @@ public class TestRunner
 		String test_col = "test";
 		String data_file = "../data/olympics3.jsonl";
 
-	    CouchbaseAggregationTest couchbase = new CouchbaseAggregationTest(
-	            "http://" + p7, 
-	            "db_tests");
-	    couchbase.run("./", 5);
-
-		
+//	    CouchbaseAggregationTest couchbase = new CouchbaseAggregationTest(
+//	            "http://" + p7, 
+//	            "db_tests");
+//	    couchbase.run("./", 5);
+//
+	    aggregationTest(
+	            "mongodb", 
+	            "e-research.cs.st-andrews.ac.uk",
+	            "db_tests",
+	            "query_test_collection",
+	            "./");
 		
 //		MongoDBClient mongo = new MongoDBClient();
 //		mongo.connect("e-research.cs.st-andrews.ac.uk", db_port, db_name);

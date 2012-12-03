@@ -29,33 +29,38 @@ public class MongoDBTweetAggregation
 	 */
 	public DBCursor mapReduceUserMentions() 
 	{
-		String map = ""
-				+ "function() {"
-				+ "		if (!this.entities) { return; }"
-				+ "		this.entities.user_mentions.forEach("
-				+ "			function(mention) {"
-				+ "				emit(mention.screen_name, { count: 1 });" 
-				+ "			}"
-				+ "		)" 
-				+ "};";
-		String reduce = "" 
-				+ "function(key, values) {" 
-				+ "		var result = { count : 0 };" 
-				+ "		values.forEach(function(value) {" 
-				+ "				result.count += value.count;"
-				+ "		});"
-				+ "		return result;"
-				+ "};";
-		
-		this.collection.mapReduce(
-				map, 
-				reduce, 
-				"user_mentions",
-				null);
-		
-		DBCollection user_mentions = this.db.getCollection("user_mentions");
-		BasicDBObject sort_by = new BasicDBObject("value.count", -1);
-		return user_mentions.find().sort(sort_by).limit(1000);
+	    try {
+            String map = ""
+                    + "function() {"
+                    + "		if (!this.entities) { return; }"
+                    + "		this.entities.user_mentions.forEach("
+                    + "			function(mention) {"
+                    + "				emit(mention.screen_name, { count: 1 });" 
+                    + "			}"
+                    + "		)" 
+                    + "};";
+            String reduce = "" 
+                    + "function(key, values) {" 
+                    + "		var result = { count : 0 };" 
+                    + "		values.forEach(function(value) {" 
+                    + "				result.count += value.count;"
+                    + "		});"
+                    + "		return result;"
+                    + "};";
+            
+            this.collection.mapReduce(
+                    map, 
+                    reduce, 
+                    "user_mentions",
+                    null);
+            
+            DBCollection user_mentions = this.db.getCollection("user_mentions");
+            BasicDBObject sort_by = new BasicDBObject("value.count", -1);
+            return user_mentions.find().sort(sort_by).limit(1000);
+        } catch (Exception e) {
+            e.printStackTrace();    
+        }
+        return null;
 	}
 	
 	/**
