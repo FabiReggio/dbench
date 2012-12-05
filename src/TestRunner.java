@@ -60,7 +60,8 @@ public class TestRunner
 			String host, 
 			String db_name, 
 			String db_table, 
-			String res_path)
+			String res_path,
+			String test_mode)
 	{
 		if (type.equals("couchbase")) {
 			CouchbaseAggregationTest couchbase = new CouchbaseAggregationTest(
@@ -71,7 +72,7 @@ public class TestRunner
 		} else if (type.equals("mongodb")) {
 			DBDetails details = new DBDetails(host, 27017, db_name, db_table);
 			MongoDBAggregationTest mongo = new MongoDBAggregationTest(details);
-			mongo.run(res_path, 5);
+			mongo.run(res_path, 5, test_mode);
 		}
 	}
 
@@ -90,17 +91,21 @@ public class TestRunner
 		String test_col = "test";
 		String data_file = "../data/olympics3.jsonl";
 
-//	    CouchbaseAggregationTest couchbase = new CouchbaseAggregationTest(
-//	            "http://" + p7, 
-//	            "db_tests");
-//	    couchbase.run("./", 5);
-//
-	    aggregationTest(
-	            "mongodb", 
-	            "e-research.cs.st-andrews.ac.uk",
-	            "db_tests",
-	            "query_test_collection",
-	            "./");
+//    aggregationTest(
+//            "mongodb", 
+//            "e-research.cs.st-andrews.ac.uk",
+//            "db_tests",
+//            "query_test_collection",
+//            "results/mongodb/raw_results/aggre_test/e-research/28-shards/",
+//            "map-reduce");
+	    
+        aggregationTest(
+                "mongodb", 
+                "project11.cs.st-andrews.ac.uk",
+                "db_tests",
+                "query_test_collection",
+                "results/mongodb/raw_results/aggre_test/project06_07_11/8-shards/",
+                "map-reduce");
 		
 //		MongoDBClient mongo = new MongoDBClient();
 //		mongo.connect("e-research.cs.st-andrews.ac.uk", db_port, db_name);

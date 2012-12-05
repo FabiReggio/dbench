@@ -93,12 +93,17 @@ public class MongoDBTweetAggregation
 		// $limit 
 		DBObject limit = new BasicDBObject("$limit", 1000);
 		
-		AggregationOutput out = this.collection.aggregate(
-				project,
-				unwind,
-				group,
-				sort,
-				limit);
+		AggregationOutput out = null;
+		try {
+			 out = this.collection.aggregate(
+					project,
+					unwind,
+					group,
+					sort,
+					limit);
+		} catch (Exception e) {
+			return null;
+		}
 		return out.results();
 	}
 	
@@ -167,13 +172,20 @@ public class MongoDBTweetAggregation
 		// $limit 
 		DBObject limit = new BasicDBObject("$limit", 1000);
 		
-		AggregationOutput out = this.collection.aggregate(
-				project,
-				unwind,
-				group,
-				sort,
-				limit);
+	
+		AggregationOutput out = null;
+		try {
+			 out = this.collection.aggregate(
+					project,
+					unwind,
+					group,
+					sort,
+					limit);
+		} catch (Exception e) {
+			return null;
+		}
 		return out.results();
+
 	}
 	
 	/**
@@ -240,12 +252,17 @@ public class MongoDBTweetAggregation
 		// $limit 
 		DBObject limit = new BasicDBObject("$limit", 1000);
 		
-		AggregationOutput out = this.collection.aggregate(
-				project,
-				unwind,
-				group,
-				sort,
-				limit);
+		AggregationOutput out = null;
+		try {
+			 out = this.collection.aggregate(
+					project,
+					unwind,
+					group,
+					sort,
+					limit);
+		} catch (Exception e) {
+			return null;
+		}
 		return out.results();
 	}
 	

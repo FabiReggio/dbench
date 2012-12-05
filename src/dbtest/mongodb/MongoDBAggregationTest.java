@@ -16,13 +16,10 @@ public class MongoDBAggregationTest extends MongoDBTest
 	// --- Fields ---
 	private MongoDBTweetAggregation mongodb;
 	private String[] results_header = {
-				"objects",
-				"user mentions (mp)",
-				"hash tags (mp)",
-				"shared urls (mp)",
-				"user mentions (aggre)",
-				"hash tags (aggre)",
-				"shared urls (aggre)"
+				"run",
+				"user mentions (ms)",
+				"hash tags (ms)",
+				"shared urls (ms)"
 	};
 	
 	// --- Constructors ---
@@ -69,23 +66,15 @@ public class MongoDBAggregationTest extends MongoDBTest
 	 */
 	public void displaySummaryResults(
 			long objects,
-			float user_mentions_mptime,
-			float hash_tags_mptime,
-			float shared_urls_mptime,
-			float user_mentions_atime,
-			float hash_tags_atime,
-			float shared_urls_atime)
+			long user_mentions_time,
+			long hash_tags_time,
+			long shared_urls_time)
 	{
 		System.out.println("-------------- Results -----------------");
 		System.out.printf("objects aggregated: %d \n", objects);
-		System.out.println("-------------- Map-Reduce ---------------");
-		System.out.printf("user mentions: %f mins \n", user_mentions_mptime);
-		System.out.printf("hash tags: %f mins \n", hash_tags_mptime);
-		System.out.printf("shared urls: %f mins \n", shared_urls_mptime);
-		System.out.println("----------- Aggregate Framework ---------");
-		System.out.printf("user mentions: %f mins \n", user_mentions_atime);
-		System.out.printf("hash tags: %f mins \n", hash_tags_atime);
-		System.out.printf("shared urls: %f mins \n", shared_urls_atime);
+		System.out.printf("user mentions: %d ms \n", user_mentions_time);
+		System.out.printf("hash tags: %d ms \n", hash_tags_time);
+		System.out.printf("shared urls: %d ms \n", shared_urls_time);
 		System.out.println("----------------------------------------");
 	}
 	
@@ -105,11 +94,11 @@ public class MongoDBAggregationTest extends MongoDBTest
 	 * 		ArrayList of Float, containing both Map-Reduce and Aggregate
 	 * 		Framework execution time.
 	 */
-	public ArrayList<Float> executeAggregation(int mode) 
+	public ArrayList<Long> executeAggregation(int mode) 
 	{
-		ArrayList<Float> results = new ArrayList<Float>();
-		float start = 0; // start time
-		float time = 0;
+		ArrayList<Long> results = new ArrayList<Long>();
+		long start = 0; // start time
+		long time = 0;
 		
 		switch(mode) {
 			case 1:
@@ -117,23 +106,23 @@ public class MongoDBAggregationTest extends MongoDBTest
 				
 				// most user mentions
 				System.out.println("Most User Mentions");
-				start = (float) System.currentTimeMillis();
+				start = System.currentTimeMillis();
 				displayMPQueryResults(this.mongodb.mapReduceUserMentions());
-				time = ((float) System.currentTimeMillis() - start) / 60000;
+				time = System.currentTimeMillis() - start;
 				results.add(time);
 				
 				// most hash-tags
 				System.out.println("Most Hash Tags");
-				start = (float) System.currentTimeMillis();
+				start = System.currentTimeMillis();
 				displayMPQueryResults(this.mongodb.mapReduceHashTags());
-				time = ((float) System.currentTimeMillis() - start) / 60000;
+				time = System.currentTimeMillis() - start;
 				results.add(time);
 				
 				// most shared urls 
 				System.out.println("Most Shared URLs");
-				start = (float) System.currentTimeMillis();
+				start = System.currentTimeMillis();
 				displayMPQueryResults(this.mongodb.mapReduceSharedUrls());
-				time = ((float) System.currentTimeMillis() - start) / 60000;
+				time = System.currentTimeMillis() - start;
 				results.add(time);
 				
 				break;
@@ -142,23 +131,23 @@ public class MongoDBAggregationTest extends MongoDBTest
 				
 				// most user mentions
 				System.out.println("Most User Mentions");
-				start = (float) System.currentTimeMillis();
+				start = System.currentTimeMillis();
 				displayAggreQueryResults(this.mongodb.aggregateUserMentions());
-				time = ((float) System.currentTimeMillis() - start) / 60000;
+				time = System.currentTimeMillis() - start;
 				results.add(time);
 				
 				// most hash-tags
 				System.out.println("Most Hash Tags");
-				start = (float) System.currentTimeMillis();
+				start = System.currentTimeMillis();
 				displayAggreQueryResults(this.mongodb.aggregateHashTags());
-				time = ((float) System.currentTimeMillis() - start) / 60000;
+				time = System.currentTimeMillis() - start;
 				results.add(time);
 				
 				// most shared urls
 				System.out.println("Most Shared URLs");
-				start = (float) System.currentTimeMillis();
+				start = System.currentTimeMillis();
 				displayAggreQueryResults(this.mongodb.aggregateSharedUrls());
-				time = ((float) System.currentTimeMillis() - start) / 60000;
+				time = System.currentTimeMillis() - start;
 				results.add(time);
 				
 				break;
@@ -170,73 +159,82 @@ public class MongoDBAggregationTest extends MongoDBTest
 	/**
 	 * Performs a series of query and records how long does it take for 
 	 * MongoDB to return the results. 
+	 * @param res_path
+	 * 		Path to save results
+	 * @param mode
+	 * 		Mode can be "map-reduce" or "aggregation framework" 
+	 * @param fm
+	 * 		FileManager to which to write results to
+	 * @param run
+	 * 		Run number
 	 * 
 	 * WARNING: We assume there are already data in the database to query
 	 * @return
 	 */
-	public void test(String res_path) 
+	private void test(String mode, FileManager fm, int run) 
 	{
-		FileManager file_manager = new FileManager();
-
 		long objects = 0; // number of objects in collection
-		ArrayList<Float> map_reduce_results = new ArrayList<Float>();
-		ArrayList<Float> aggregate_framework_results = new ArrayList<Float>();
-		
-		// prepare 
-		prepResultsFile(file_manager, res_path, this.results_header);
-		objects = this.mongodb.getCollectionCount();
+		ArrayList<Long> test_results = new ArrayList<Long>();
 		
 		// run tests
-		map_reduce_results = executeAggregation(1);
-		aggregate_framework_results = executeAggregation(2);
+		if (mode.equals("map-reduce")) {
+			test_results = executeAggregation(1);
+		} else if (mode.equals("aggregation framework")){
+			test_results = executeAggregation(2);
+		}
 		
 		// display results
 		displaySummaryResults(
 				objects,
-				map_reduce_results.get(0), // user mentions
-				map_reduce_results.get(1), // hash tags
-				map_reduce_results.get(2), // shared urls 
-				aggregate_framework_results.get(0), // user mentions
-				aggregate_framework_results.get(1), // hash tags
-				aggregate_framework_results.get(2) // shared urls
-				);
+				test_results.get(0), // user mentions
+				test_results.get(1), // hash tags
+				test_results.get(2)); // shared urls 
 		System.out.printf("\n\n");
 		
 		// log results
 		String[] csv_line = {
-				Long.toString(objects), // number of objects in collection
-				// MAP-REDUCE
-				// user mentions
-				Float.toString(map_reduce_results.get(0)), 
-				// hash tags
-				Float.toString(map_reduce_results.get(1)), 
-				// shared urls 
-				Float.toString(map_reduce_results.get(2)), 
-				// AGGREGATE FRAMEWORK
-				// user mentions
-				Float.toString(aggregate_framework_results.get(0)),
-				// hash tags
-				Float.toString(aggregate_framework_results.get(1)),
-				// shared urls 
-				Float.toString(aggregate_framework_results.get(2)) 
+				Integer.toString(run), // number of objects in collection
+				Long.toString(test_results.get(0)), // user mentions
+				Long.toString(test_results.get(1)), // hash tags
+				Long.toString(test_results.get(2)), // shared urls 
 		};
-		file_manager.csvLogEvent(csv_line);
+		fm.csvLogEvent(csv_line);
 		
-		// close
-		file_manager.closeFileWriter();
 	}
 	
 	/**
 	 * Execute the test
 	 * @param res_path
+	 * 		Results path
 	 * @param repeat
+	 * 		Number of times to repeat
+	 * @param mode
+	 * 		Mode can be "map-reduce" or "aggregation framework" 
 	 */
-	public void run(String res_path, int repeat) 
+	public void run(String res_path, int repeat, String mode) 
 	{
+		String fpath = "";
+		
+		if (mode.equals("map-reduce")) {
+			fpath = res_path + "aggre_results_map-reduce.csv";
+		} else if (mode.equals("aggregation framework")) {
+			fpath = res_path + "aggre_results_aggre_framework).csv";
+		} else {
+			System.out.println("Error! invalid mode chosen!");
+			System.exit(-1);
+		}
+		
+		// prep results file
+		FileManager file_manager = new FileManager();
+		prepResultsFile(file_manager, fpath, this.results_header);
+		
 		for (int i = 1; i <= repeat; i++) {
 			System.out.println("Run number: " + Integer.toString(i));
-			this.test(res_path + "aggre_results_" + i + ".csv");
+			this.test(mode, file_manager, i);
 		}
+		
+		// close results file
+		file_manager.closeFileWriter();
 	}
 	
 	/**
