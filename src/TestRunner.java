@@ -91,22 +91,14 @@ public class TestRunner
 		String test_col = "test";
 		String data_file = "../data/olympics3.jsonl";
 
-//    aggregationTest(
-//            "mongodb", 
-//            "e-research.cs.st-andrews.ac.uk",
-//            "db_tests",
-//            "query_test_collection",
-//            "results/mongodb/raw_results/aggre_test/e-research/28-shards/",
-//            "map-reduce");
-	    
         aggregationTest(
                 "mongodb", 
-                "project11.cs.st-andrews.ac.uk",
+                "e-research.cs.st-andrews.ac.uk",
                 "db_tests",
                 "query_test_collection",
-                "results/mongodb/raw_results/aggre_test/project06_07_11/8-shards/",
+                "results/mongodb/raw_results/aggre_test/e-research/4-shards/",
                 "map-reduce");
-		
+	    
 //		MongoDBClient mongo = new MongoDBClient();
 //		mongo.connect("e-research.cs.st-andrews.ac.uk", db_port, db_name);
 //		mongo.setCollection(test_col);
