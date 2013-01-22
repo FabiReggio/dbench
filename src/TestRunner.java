@@ -93,11 +93,18 @@ public class TestRunner
 
         aggregationTest(
                 "mongodb", 
-                "e-research.cs.st-andrews.ac.uk",
+                "localhost",
                 "db_tests",
                 "query_test_collection",
-                "results/mongodb/raw_results/aggre_test/e-research/4-shards/",
+                "results/mongodb/raw_results/aggre_test/single_gup2/mp/",
                 "map-reduce");
+        aggregationTest(
+                "mongodb", 
+                "localhost",
+                "db_tests",
+                "query_test_collection",
+                "results/mongodb/raw_results/aggre_test/single_gup2/aggre/",
+                "aggregation framework");
 	    
 //		MongoDBClient mongo = new MongoDBClient();
 //		mongo.connect("e-research.cs.st-andrews.ac.uk", db_port, db_name);
