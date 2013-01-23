@@ -93,14 +93,14 @@ public class TestRunner
 
         aggregationTest(
                 "mongodb", 
-                "localhost",
+                "avoss-cloud.cs.st-andrews.ac.uk",
                 "db_tests",
                 "query_test_collection",
                 "results/mongodb/raw_results/aggre_test/single_gup2/mp/",
                 "map-reduce");
         aggregationTest(
                 "mongodb", 
-                "localhost",
+                "avoss-cloud.cs.st-andrews.ac.uk",
                 "db_tests",
                 "query_test_collection",
                 "results/mongodb/raw_results/aggre_test/single_gup2/aggre/",
