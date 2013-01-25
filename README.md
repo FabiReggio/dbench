@@ -6,7 +6,7 @@ dbench is a rudimentary database benchmarker. The benchmarks implemented is gear
 
 For more information on the benchmarks I strongly suggest you visit dbench's wiki pages [**HERE**](https://github.com/chutsu/dbench/wiki).
 
-# Other
+## Other
 Other databases we are interested are:
 
 - Solr (Full text search)
