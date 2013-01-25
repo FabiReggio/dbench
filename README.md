@@ -4,7 +4,7 @@ dbench is a rudimentary database benchmarker. The benchmarks implemented is gear
 - MongoDB
 - Couchbase
 
-For more information on the benchmarks I strongly suggest you visit dbench's wiki pages [here](https://github.com/chutsu/dbench/wiki).
+For more information on the benchmarks I strongly suggest you visit dbench's wiki pages [**HERE**](https://github.com/chutsu/dbench/wiki).
 
 # Other
 Other databases we are interested are:
