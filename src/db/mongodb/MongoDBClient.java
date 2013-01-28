@@ -251,6 +251,11 @@ public class MongoDBClient
 	
 	/**
 	 * Make _keyword field for faster quering
+	 * @param
+	 * 		target_field
+	 * 
+	 * @return
+	 * 		Boolean
 	 */
 	public boolean addKeywordField(String target_field)
 	{
