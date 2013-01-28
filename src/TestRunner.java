@@ -31,44 +31,44 @@ import dbtest.mongodb.MongoDBIOTest;
 
 /**
  * TestRunner as the name suggests is where the tests are executed from
- * @author Chris Choi 
+ * @author Chris Choi
  */
-public class TestRunner 
+public class TestRunner
 {
 	// --- Fields ---
-	
+
 	// --- Constructors ---
 	public TestRunner() {}
-	
+
 	// --- Methods ---
 	/**
-	 * Not to be confused with the database performance test, the unit 
-	 * tests serve as a confirmation that an interface in communicating 
+	 * Not to be confused with the database performance test, the unit
+	 * tests serve as a confirmation that an interface in communicating
 	 * with different databases do indeed work.
 	 */
-	public void runUnitTests() 
+	public void runUnitTests()
     {
         System.out.println("running Unit Tests!");
         Result result = JUnitCore.runClasses(MongoDBUnitTests.class);
         for (Failure failure: result.getFailures()) {
             System.out.println(failure.toString());
         }
-    }	
-	
+    }
+
 	public static void aggregationTest(
-			String type, 
-			String host, 
-			String db_name, 
-			String db_table, 
+			String type,
+			String host,
+			String db_name,
+			String db_table,
 			String res_path,
 			String test_mode)
 	{
 		if (type.equals("couchbase")) {
 			CouchbaseAggregationTest couchbase = new CouchbaseAggregationTest(
-					"http://" + host, 
+					"http://" + host,
 					db_name);
 			couchbase.run(res_path, 5);
-			
+
 		} else if (type.equals("mongodb")) {
 			DBDetails details = new DBDetails(host, 27017, db_name, db_table);
 			MongoDBAggregationTest mongo = new MongoDBAggregationTest(details);
@@ -77,7 +77,7 @@ public class TestRunner
 	}
 
 	// --- Main ---
-	public static void main(String[] argv) 
+	public static void main(String[] argv)
 	{
 		String db_name = "db_tests";
 		String avoss = "avoss-cloud.cs.st-andrews.ac.uk";
@@ -85,20 +85,20 @@ public class TestRunner
 		String p7 = "project07.cs.st-andrews.ac.uk";
 		String local_host = "http://localhost";
 		int db_port = 27017;
-		
+
 		String io_col = "io_test_collection";
 		String q_col = "query_test_collection";
 		String test_col = "test";
 		String data_file = "../data/olympics3.jsonl";
 
         aggregationTest(
-                "mongodb", 
+                "mongodb",
                 "e-research.cs.st-andrews.ac.uk",
                 "db_tests",
                 "query_test_collection",
                 "results/mongodb/raw_results/aggre_test/e-research/4-shards/",
                 "map-reduce");
-	    
+
 //		MongoDBClient mongo = new MongoDBClient();
 //		mongo.connect("e-research.cs.st-andrews.ac.uk", db_port, db_name);
 //		mongo.setCollection(test_col);
@@ -113,7 +113,7 @@ public class TestRunner
 //		String line = "";
 //		LineIterator line_iter;
 //		try {
-//			line_iter = FileUtils.lineIterator(new File(data_file));		
+//			line_iter = FileUtils.lineIterator(new File(data_file));
 //			while (line_iter.hasNext()) {
 //				line = line_iter.next();
 //				boolean test = false;
@@ -121,18 +121,18 @@ public class TestRunner
 //				// check first char of line
 //				try { if (line.charAt(0) == '{') test = true;
 //				} catch (IndexOutOfBoundsException e) {}
-//				
-//				if (test) { 
+//
+//				if (test) {
 //						couchbase.insert(line);
 //				}
 //			}
-//			line_iter.close(); // reset the iterator by closing 
+//			line_iter.close(); // reset the iterator by closing
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
-//		
+//
 //		couchbase.disconnect();
-		
+
 //		String doc_path = "./config/couchbase/most_user_mentioned.json";
 //		String doc;
 //		try {
@@ -142,7 +142,7 @@ public class TestRunner
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
-  	
+
 //		SolrClient solr = new SolrClient();
 //		solr.connect(local_host, 8983);
 //		solr.deleteAll();

@@ -1,0 +1,9 @@
+{
+    db: "mongodb",
+    db_name: "test",
+    db_table: "test_table",
+    db_host: "localhost",
+
+    test_type: "aggregation",
+    aggregation_method: "map-reduce"
+}

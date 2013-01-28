@@ -1,4 +1,4 @@
-package dbtest;
+package dbtest.solr;
 
 import io.FileManager;
 import db.DBDetails;
