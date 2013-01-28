@@ -52,7 +52,8 @@ public class TestRunner
 		MongoDBClient mongo = new MongoDBClient();
 		mongo.connect("localhost", 27017, "query_test_collection");
 		mongo.setCollection("query_test_collection");
-		mongo.addKeywordField("text");
+		if (mongo.addKeywordField("text") == false)
+			System.out.println("Opps! couldn't add a keyword field");
 		
 //		aggregationTest(
 //                "mongodb", 
