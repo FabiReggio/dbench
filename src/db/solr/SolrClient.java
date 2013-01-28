@@ -24,13 +24,16 @@ import twitter4j.json.DataObjectFactory;
  * Solr Client
  * @author Chris Choi
  */
-public class SolrClient 
+public class SolrClient
 {
 	// --- Fields ---
 	private HttpSolrServer server;
-	
+
 	// --- Constructors ---
-	public SolrClient() {}
+	public SolrClient(String db_host, int db_port)
+	{
+        this.connect(db_host, db_port);
+    }
 
 	// --- Methods ---
 	/**
@@ -39,7 +42,7 @@ public class SolrClient
 	 * @param db_port
 	 * @return
 	 */
-	public void connect(String db_host, int db_port) 
+	public void connect(String db_host, int db_port)
 	{
 		this.server = new HttpSolrServer(db_host + ":" +  db_port + "/solr/");
 	}
@@ -48,16 +51,16 @@ public class SolrClient
 	 * Disconnect from Solr server
 	 * @return
 	 */
-	public void disconnect() 
+	public void disconnect()
 	{
 		this.server.shutdown();
 	}
-	
+
 	/**
 	 * Add Tweet to Solr
 	 * @param file
 	 * @param tweets
-	 * 		Number of tweets to add 
+	 * 		Number of tweets to add
 	 * @return
 	 * 		True or False
 	 */
@@ -69,27 +72,27 @@ public class SolrClient
 	    Collection<SolrInputDocument> doc_list = new ArrayList<SolrInputDocument>();
 		long limit = tweets;
 		long count = 0;
-	    
+
 		try {
 			LineIterator line_iter = FileUtils.lineIterator(new File(file));
-			
+
 			while (line_iter.hasNext()) {
 				// check limit
 				if (count == limit) break;
 				count++;
-				
+
 				// raw json to object
 				json_string = line_iter.next();
-				
+
 				try {
 					Status tweet = DataObjectFactory.createStatus(json_string);
-					
+
 					// create solr document
 				    SolrInputDocument doc = new SolrInputDocument();
 				    doc.addField("id", tweet.getId());
 				    doc.addField("text", tweet.getText());
 				    doc_list.add(doc);
-				    
+
 				    // add to server every 10000 docs
 				    if ((doc_list.size() % 10000) == 0) {
 				    	System.out.println("Adding 10000 docs to solr");
@@ -100,7 +103,7 @@ public class SolrClient
 					System.out.println("error! bad tweet on line: " + count);
 					bad_tweets_record.add(count);
 					bad_tweets++;
-				} 
+				}
 			}
 			this.server.add(doc_list); // flush out remaining docs in doc_list
 			this.server.commit(); // commit!
@@ -119,7 +122,7 @@ public class SolrClient
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Add Tweet to Solr
 	 * @param file
@@ -130,9 +133,9 @@ public class SolrClient
 	{
 		return addTweets(file, -1);
 	}
-	
+
 	/**
-	 * Counts the number of tweets containing specified value from the 
+	 * Counts the number of tweets containing specified value from the
 	 * key field in question
 	 * @param key
 	 * @param value
@@ -142,46 +145,46 @@ public class SolrClient
 		try {
 			ModifiableSolrParams params = new ModifiableSolrParams();
 			params.set("q", key + ":" + value);
-			
+
 			QueryResponse response = this.server.query(params);
 			SolrDocumentList results = response.getResults();
-			
+
 			System.out.println("hits: " + results.getNumFound());
 			System.out.println("query time (ms): " + response.getElapsedTime());
 			System.out.println("tweets: " + results.size());
-			
+
 			int limit = 10;
 			int count = 0;
 			for (SolrDocument doc : results) {
 				if (limit == count) break;
 				count++;
-				
+
 				System.out.println("[DOC]: " + doc.getFieldValue("text"));
 			}
-			
+
 			return results.size();
 		} catch (SolrServerException e) {
 			e.printStackTrace();
 		}
-		
+
 		return 0;
 	}
-	
+
 	/**
-	 * Just a dummy query to see if Solr is working 
+	 * Just a dummy query to see if Solr is working
 	 */
-	public void testQuery() 
+	public void testQuery()
 	{
 		try {
 			ModifiableSolrParams params = new ModifiableSolrParams();
 			params.set("q", "*:*");
-			
+
 			QueryResponse response = this.server.query(params);
 			SolrDocumentList results = response.getResults();
-			
+
 			System.out.println("hits: " + results.getNumFound());
 			System.out.println("query time (ms): " + response.getElapsedTime());
-			
+
 			for (SolrDocument doc : results) {
 				System.out.println("DOC: " + doc.getFieldValue("text"));
 			}
@@ -189,11 +192,11 @@ public class SolrClient
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Deletes all data in solr collection
 	 */
-	public void deleteAll() 
+	public void deleteAll()
 	{
 		try {
 			this.server.deleteByQuery("*:*");
@@ -203,7 +206,7 @@ public class SolrClient
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		
+
+
 	}
 }

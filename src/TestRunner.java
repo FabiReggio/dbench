@@ -1,5 +1,6 @@
 import db.DBDetails;
 import db.mongodb.MongoDBClient;
+import db.solr.SolrClient;
 import dbtest.couchbase.CouchbaseAggregationTest;
 import dbtest.mongodb.MongoDBAggregationTest;
 
@@ -33,7 +34,7 @@ public class TestRunner
 			mongo.run(res_path, 5, test_mode);
 		}
 	}
-	
+
 	public static void fullTextSearchTest(
 			String type,
 			String host,
@@ -49,17 +50,11 @@ public class TestRunner
 	// --- Main ---
 	public static void main(String[] argv)
 	{
-		MongoDBClient mongo = new MongoDBClient();
-		mongo.connect("localhost", 27017, "query_test_collection");
-		mongo.setCollection("query_test_collection");
-		mongo.addKeywordField("text");
-		
-//		aggregationTest(
-//                "mongodb", 
-//				"localhost",
-//                "db_tests",
-//                "query_test_collection",
-//                "results/test",
-//                "map-reduce");
+        String db_host = "http://localhost";
+        int db_port = 1234;
+
+        SolrClient solr = new SolrClient(db_host, db_port);
+        solr.deleteAll();
+        solr.addTweets("/ssd/chris/twitter_data/olympics3.jsonl");
 	}
 }
