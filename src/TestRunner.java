@@ -1,5 +1,4 @@
 import db.DBDetails;
-import db.mongodb.MongoDBClient;
 import db.solr.SolrClient;
 import dbtest.couchbase.CouchbaseAggregationTest;
 import dbtest.mongodb.MongoDBAggregationTest;
@@ -50,7 +49,9 @@ public class TestRunner
 	// --- Main ---
 	public static void main(String[] argv)
 	{
-        String db_host = "http://localhost";
+		TestRunner test = new TestRunner();
+		
+        String db_host = "http://avoss-cloud.cs.st-andrews.ac.uk";
         int db_port = 1234;
 
         SolrClient solr = new SolrClient(db_host, db_port);

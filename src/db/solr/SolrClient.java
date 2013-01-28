@@ -34,6 +34,9 @@ public class SolrClient
 	{
         this.connect(db_host, db_port);
     }
+	
+	public SolrClient() {}
+	
 
 	// --- Methods ---
 	/**
