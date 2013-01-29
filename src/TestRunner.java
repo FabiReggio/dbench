@@ -1,4 +1,6 @@
 import db.DBDetails;
+import db.neo4j.EmbeddedNeo4jClient;
+import db.neo4j.Neo4jTweetImporter;
 import db.solr.SolrClient;
 import dbtest.couchbase.CouchbaseAggregationTest;
 import dbtest.mongodb.MongoDBAggregationTest;
@@ -53,9 +55,17 @@ public class TestRunner
 		
         String db_host = "http://avoss-cloud.cs.st-andrews.ac.uk";
         int db_port = 1234;
+        String neo4j_dbpath = "/Users/chutsu/neo4j_test/";
+        String test_data = "/Users/chutsu/sandbox/twitter_data/test.jsonl";
 
-        SolrClient solr = new SolrClient(db_host, db_port);
-        solr.deleteAll();
-        solr.addTweets("/ssd/chris/twitter_data/olympics3.jsonl");
+//        SolrClient solr = new SolrClient(db_host, db_port);
+//        solr.deleteAll();
+//        solr.addTweets("/ssd/chris/twitter_data/olympics3.jsonl");
+        
+        EmbeddedNeo4jClient neo4j = new EmbeddedNeo4jClient(neo4j_dbpath);
+        neo4j.dropDatabase();
+        neo4j.connect();
+        Neo4jTweetImporter neo4j_importer = new Neo4jTweetImporter(neo4j);
+        neo4j_importer.importTweets(test_data);
 	}
 }

@@ -70,9 +70,11 @@ public class Neo4jTweetImporter
 		} finally {
 			System.out.println("Inserted: " + (count - bad_tweets));
 			System.out.println("Number of Bad Tweets: " + bad_tweets);
-			System.out.println("On line numbers:");
-			for (int i = 0; i < bad_tweets_record.size(); i++)
-				System.out.println((i + 1) + ": " + bad_tweets_record.get(i));
+			if (bad_tweets > 0) {
+				System.out.println("On line numbers:");
+				for (int i = 0; i < bad_tweets_record.size(); i++)
+					System.out.println((i + 1) + ": " + bad_tweets_record.get(i));
+			}
 		}
 		return true;
 	}
@@ -89,5 +91,4 @@ public class Neo4jTweetImporter
 	{
 		return importTweets(fp, -1);
 	}
-
 }

@@ -2,17 +2,13 @@ package db.neo4j;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.impl.util.FileUtils;
 import org.neo4j.tooling.GlobalGraphOperations;
@@ -29,16 +25,18 @@ public class EmbeddedNeo4jClient
 	private String db_path;
 	private GlobalGraphOperations global_db_op;
 	private HashMap<String, Long> node_list = new HashMap<String, Long>();
+	private HashMap<String, Relationship> rel_list = new HashMap<String, Relationship>();
+    private static enum RelTypes implements RelationshipType
+    {
+        MENTIONS,
+        SHARES_URL, 
+        HASH_TAGS
+    }
 	
-    private String greeting;
-    private Node node_1;
-    private Node node_2;
-    private Relationship relationship;
-
-
     // --- Constructor ---
     public EmbeddedNeo4jClient(String db_path) {
     	this.db_path = db_path;
+    	this.connect();
     }
 
     // --- Methods ---
@@ -51,10 +49,15 @@ public class EmbeddedNeo4jClient
     	this.graph_db = new EmbeddedGraphDatabase(this.db_path);
         registerShutdownHook(this.graph_db);
         
+        // clear all book keepers
+        node_list.clear();
+        rel_list.clear();
+        
         // load all nodes to a node_name_list
         this.global_db_op = GlobalGraphOperations.at(this.graph_db);
         for (Node n : global_db_op.getAllNodes()) 
-        	this.node_list.put((String) n.getProperty("value"), n.getId());
+        	for (String property: n.getPropertyKeys())
+	        	this.node_list.put((String) n.getProperty(property), n.getId());
         
     	if (this.graph_db != null) return true;
     	else return false;
@@ -88,78 +91,57 @@ public class EmbeddedNeo4jClient
     }
 
     /**
-     * Defined relationship types between nodes
-     * @author chris
-     */
-    private static enum RelTypes implements RelationshipType
-    {
-        KNOWS,
-        MENTIONS,
-        SHARES_URL, 
-        HASH_TAGGED
-    }
-
-    /**
-     * 
-     */
-    public void createDb()
-    {
-        Transaction tx = graph_db.beginTx();
-        try
-        {
-            // Updating operations go here
-            node_1 = graph_db.createNode();
-            node_1.setProperty( "message", "Hello, " );
-            node_2 = graph_db.createNode();
-            node_2.setProperty( "message", "World!" );
-
-            relationship = node_1.createRelationshipTo(node_2, RelTypes.KNOWS);
-            relationship.setProperty( "message", "brave Neo4j " );
-
-            System.out.print( node_1.getProperty( "message" ) );
-            System.out.print( relationship.getProperty( "message" ) );
-            System.out.print( node_2.getProperty( "message" ) );
-
-            greeting = ( (String) node_1.getProperty( "message" ) )
-                       + ( (String) relationship.getProperty( "message" ) )
-                       + ( (String) node_2.getProperty( "message" ) );
-
-            tx.success();
-        } finally {
-            tx.finish();
-        }
-    }
-    
-    /**
      * Insert tweet
      * @param tweet
      */
     public void addTweet(Status tweet)
     {
-        Transaction tx = this.graph_db.beginTx();
-        try
-        {
-        	String tweet_author = tweet.getUser().getScreenName();
-        	UserMentionEntity[] user_mentions = tweet.getUserMentionEntities();
-        	HashtagEntity[] hash_tags = tweet.getHashtagEntities();
-        	URLEntity[] urls = tweet.getURLEntities();
-        	
-        	String user_mentioned;
-        	for (UserMentionEntity user_mention : user_mentions) {
-        		user_mentioned = user_mention.getScreenName();
-        		if (nodeExists(user_mentioned)) {
-        			incrementNodeWeight(user_mentioned);
-        		} else {
-        			
-        		}
-        		
-        	}
-        	
-            tx.success();
-        } finally {
-            tx.finish();
-        }
+    	String tweet_author = tweet.getUser().getScreenName();
+    	UserMentionEntity[] user_mentions = tweet.getUserMentionEntities();
+    	HashtagEntity[] hash_tags = tweet.getHashtagEntities();
+    	URLEntity[] urls = tweet.getURLEntities();
     	
+    	// create a node for the author
+    	if (nodeExists(tweet_author) == false) 
+        	createNewNode("user", tweet_author);
+    	
+    	// iterate through user_mentions, hash tags and urls and create
+    	// relationships with the author node
+    	// USER MENTIONED
+    	String user_mentioned;
+    	for (UserMentionEntity user_mention : user_mentions) {
+    		user_mentioned = user_mention.getScreenName();
+    		if (user_mentioned != null) {
+	    		if (nodeExists(user_mentioned))
+	    			incrementNodeWeight(user_mentioned);
+	    		else 
+	        		createNewNode("user", user_mentioned);
+    		}
+    	}
+    	
+    	// HASH TAGGED
+    	String tag;
+    	for (HashtagEntity hash_tag: hash_tags) {
+    		tag = hash_tag.getText();
+    		if (tag != null) {
+	    		if (nodeExists(tag)) 
+	    			incrementNodeWeight(tag);
+	    		else
+	        		createNewNode("hash_tagged", tag);
+    		}
+    	}
+    	
+    	// SHARED URLS 
+    	String display_url;
+    	for (URLEntity url: urls) {
+    		display_url = url.getDisplayURL();
+    		if (display_url != null) {
+	    		if (nodeExists(display_url)) 
+	    			incrementNodeWeight(display_url);
+	    		else
+	        		createNewNode("shared_url", display_url);
+    		}
+    	}
     }
 
     /**
@@ -175,34 +157,23 @@ public class EmbeddedNeo4jClient
     }
 
     /**
-     * Remove data from graph database
+     * Create a new node
+     * @param node_name
+     * @return
      */
-    public void removeData()
-    {
-        Transaction tx = graph_db.beginTx();
-        try {
-            // let's remove the data
-            node_1.getSingleRelationship(RelTypes.KNOWS, Direction.OUTGOING)
-            		.delete();
-            node_1.delete();
-            node_2.delete();
-
-            tx.success();
-        } finally {
-            tx.finish();
-        }
-    }
-    
-    public boolean createNewNode(String node_name) 
+    public boolean createNewNode(String property, String value) 
     {
     	boolean outcome = false;
+    	
+    	if (nodeExists(value)) return outcome;
+    	
         Transaction tx = this.graph_db.beginTx();
         
         try {
         	 Node node = this.graph_db.createNode();
         	 
-             node.setProperty("value", node_name);
-             node.setProperty("weight", 0);
+             node.setProperty(property, value);
+             node.setProperty("weight", 1);
              
              outcome = true;
         } finally {
@@ -244,6 +215,22 @@ public class EmbeddedNeo4jClient
     }
     
     /**
+     * Checks to see if node with specific property and value exists
+     * @param node_name 
+     * @return
+     * 		Boolean
+     */
+    public boolean nodeExists(String node_name)
+    {
+    	if (this.node_list.containsKey((String) node_name)) {
+    		System.out.println("node " + node_name + "exists!");
+    		return true;
+    	} else {
+    		return false;
+    	}
+    }
+    
+    /**
      * Increment the node's weight
      * @param node_name
      * @return
@@ -275,17 +262,67 @@ public class EmbeddedNeo4jClient
     }
     
     /**
-     * Checks to see if node with specific property and value exists
-     * @param node_name 
+     * Obtain relationship between two nodes
+     * @param node_1
+     * @param node_2
+     * @param rel_type
      * @return
-     * 		Boolean
      */
-    public boolean nodeExists(String node_name)
+    public Relationship getRelationship(
+    		String node_1, 
+    		String node_2,
+    		String rel_type) 
     {
-    	return this.node_list.containsKey((String) node_name);
+    	String key = node_1 + "-" + node_2 + ":[" + rel_type + "]";
+    	return  rel_list.get(key);
+    }
+  
+    /**
+     * Create relationship between node 1 and node 2
+     * @param node_1
+     * @param node_2
+     * @param rel_type
+     * @return
+     */
+    public boolean createRelationship(
+    			Node node_1, 
+    			Node node_2, 
+    			String rel_type) 
+    {
+    	Relationship rel = null;
+    	String first_node = "";
+    	String second_node = "";
+    	
+    	// create corresponding relationship
+    	if (rel_type.equals("mentions")) {
+	    	rel = node_1.createRelationshipTo(node_2, RelTypes.MENTIONS);
+	    	first_node = (String) node_1.getProperty("user");
+	    	second_node = (String) node_2.getProperty("user");
+    	} else if (rel_type.equals("hash tagged")) {
+	    	rel = node_1.createRelationshipTo(node_2, RelTypes.HASH_TAGS);
+	    	first_node = (String) node_1.getProperty("user");
+	    	second_node = (String) node_2.getProperty("hashtag");
+    	} else if (rel_type.equals("shared url")) {
+	    	rel = node_1.createRelationshipTo(node_2, RelTypes.SHARES_URL);
+	    	first_node = (String) node_1.getProperty("user");
+	    	second_node = (String) node_2.getProperty("url");
+    	}
+    	
+    	// add relationship to rel_list
+    	String key = first_node + "-" + second_node + ":[" + rel_type + "]";
+    	rel_list.put(key, rel);
+    	
+    	return false;
     }
     
-    
+    public void removeRelationship(
+    		String node_1,
+    		String node_2,
+    		String rel_type)
+    {
+    	getRelationship(node_1, node_2, rel_type).delete();
+    }
+    		
     /**
      * Checks to see if connected
      * @return
@@ -295,5 +332,4 @@ public class EmbeddedNeo4jClient
     	if (this.graph_db != null) return true;
     	else return false;
     }
-    
 }
