@@ -1,4 +1,9 @@
+import java.util.Map;
+
+import org.neo4j.graphdb.Relationship;
+
 import db.DBDetails;
+import db.neo4j.CypherQueryController;
 import db.neo4j.EmbeddedNeo4jClient;
 import db.neo4j.Neo4jTweetImporter;
 import db.solr.SolrClient;
@@ -63,9 +68,21 @@ public class TestRunner
 //        solr.addTweets("/ssd/chris/twitter_data/olympics3.jsonl");
         
         EmbeddedNeo4jClient neo4j = new EmbeddedNeo4jClient(neo4j_dbpath);
+        Neo4jTweetImporter neo4j_importer = new Neo4jTweetImporter(neo4j);
+        CypherQueryController query_engine = new CypherQueryController(neo4j);
+        
         neo4j.dropDatabase();
         neo4j.connect();
-        Neo4jTweetImporter neo4j_importer = new Neo4jTweetImporter(neo4j);
+        
         neo4j_importer.importTweets(test_data);
+        
+        for (Map.Entry<String, Relationship> entry : neo4j.rel_list.entrySet())
+        	System.out.println(entry.getKey());
+        
+        long id = neo4j.node_list.get("London2012");
+        String q = "START n=node(" + id + ") " +
+//        		"MATCH n-[:hash_tagged]->fof " +
+        		"RETURN n";
+        query_engine.query(q);
 	}
 }

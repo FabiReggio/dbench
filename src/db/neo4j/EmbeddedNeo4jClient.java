@@ -21,11 +21,11 @@ import twitter4j.UserMentionEntity;
 public class EmbeddedNeo4jClient 
 {
     // --- Fields ---
-	private GraphDatabaseService graph_db;
+	public GraphDatabaseService graph_db;
 	private String db_path;
 	private GlobalGraphOperations global_db_op;
-	private HashMap<String, Long> node_list = new HashMap<String, Long>();
-	private HashMap<String, Relationship> rel_list = new HashMap<String, Relationship>();
+	public HashMap<String, Long> node_list = new HashMap<String, Long>();
+	public HashMap<String, Relationship> rel_list = new HashMap<String, Relationship>();
     private static enum RelTypes implements RelationshipType
     {
         MENTIONS,
@@ -55,9 +55,15 @@ public class EmbeddedNeo4jClient
         
         // load all nodes to a node_name_list
         this.global_db_op = GlobalGraphOperations.at(this.graph_db);
-        for (Node n : global_db_op.getAllNodes()) 
-        	for (String property: n.getPropertyKeys())
-	        	this.node_list.put((String) n.getProperty(property), n.getId());
+        for (Node n : global_db_op.getAllNodes()) {
+        	for (String property: n.getPropertyKeys()) {
+        		if (property.equals("weight") == false) {
+        			String value = (String) n.getProperty(property);
+        			Long p_id = n.getId();
+		        	this.node_list.put(value, p_id);
+        		}
+        	}
+        }
         
     	if (this.graph_db != null) return true;
     	else return false;
@@ -127,7 +133,7 @@ public class EmbeddedNeo4jClient
 	    		if (nodeExists(tag)) 
 	    			incrementNodeWeight(tag);
 	    		else
-	        		createNewNode("hash_tagged", tag);
+	        		createNewNode("hash_tag", tag);
     		}
     	}
     	
@@ -139,7 +145,7 @@ public class EmbeddedNeo4jClient
 	    		if (nodeExists(display_url)) 
 	    			incrementNodeWeight(display_url);
 	    		else
-	        		createNewNode("shared_url", display_url);
+	        		createNewNode("url", display_url);
     		}
     	}
     }
@@ -176,10 +182,14 @@ public class EmbeddedNeo4jClient
              node.setProperty("weight", 1);
              
              outcome = true;
+             // record new node in node_list
+             node_list.put(value, node.getId()); 
+             
+             tx.success();
         } finally {
         	tx.finish();
         }
-    	
+        
         return outcome;
     }
     
@@ -207,6 +217,10 @@ public class EmbeddedNeo4jClient
 			node.delete();
 			
         	outcome = true;
+        	// remove node in node_list
+        	node_list.remove(node_name);
+        	
+            tx.success();
         } finally {
         	tx.finish();
         }
@@ -222,12 +236,10 @@ public class EmbeddedNeo4jClient
      */
     public boolean nodeExists(String node_name)
     {
-    	if (this.node_list.containsKey((String) node_name)) {
-    		System.out.println("node " + node_name + "exists!");
+    	if (this.node_list.containsKey((String) node_name)) 
     		return true;
-    	} else {
+    	else 
     		return false;
-    	}
     }
     
     /**
@@ -254,6 +266,7 @@ public class EmbeddedNeo4jClient
 			node.setProperty("weight", weight);
 			
 			outcome = true;
+            tx.success();
         } finally {
         	tx.finish();
         }
@@ -298,11 +311,11 @@ public class EmbeddedNeo4jClient
 	    	rel = node_1.createRelationshipTo(node_2, RelTypes.MENTIONS);
 	    	first_node = (String) node_1.getProperty("user");
 	    	second_node = (String) node_2.getProperty("user");
-    	} else if (rel_type.equals("hash tagged")) {
+    	} else if (rel_type.equals("hash_tagged")) {
 	    	rel = node_1.createRelationshipTo(node_2, RelTypes.HASH_TAGS);
 	    	first_node = (String) node_1.getProperty("user");
 	    	second_node = (String) node_2.getProperty("hashtag");
-    	} else if (rel_type.equals("shared url")) {
+    	} else if (rel_type.equals("shared_url")) {
 	    	rel = node_1.createRelationshipTo(node_2, RelTypes.SHARES_URL);
 	    	first_node = (String) node_1.getProperty("user");
 	    	second_node = (String) node_2.getProperty("url");
