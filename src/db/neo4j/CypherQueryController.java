@@ -5,7 +5,8 @@ import java.util.Map.Entry;
 
 import org.neo4j.cypher.javacompat.*;
 
-public class CypherQueryController {
+public class CypherQueryController 
+{
 	// --- Fields ---
 	private ExecutionEngine query_engine;
 
@@ -22,6 +23,7 @@ public class CypherQueryController {
 		for (Map<String, Object> row : result) {
 			for (Entry<String, Object> column : row.entrySet()) {
 				rows += column.getKey() + ": " + column.getValue() + "; ";
+				rows += "\n";
 			}
 			rows += "\n";
 		}

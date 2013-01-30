@@ -3,12 +3,9 @@ package db.neo4j;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.common.SolrInputDocument;
 
 import twitter4j.Status;
 import twitter4j.TwitterException;
@@ -50,11 +47,9 @@ public class Neo4jTweetImporter
 				if (count == limit) break;
 				count++;
 				
-				// raw json to object
-				json_string = line_iter.next();
-				
 				// try and parse tweet
 				try {
+					json_string = line_iter.next();
 					Status tweet = DataObjectFactory.createStatus(json_string);
 					this.db.addTweet(tweet);
 				} catch (TwitterException e) {

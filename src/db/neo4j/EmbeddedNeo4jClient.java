@@ -18,6 +18,9 @@ import twitter4j.Status;
 import twitter4j.URLEntity;
 import twitter4j.UserMentionEntity;
 
+import db.neo4j.TweetRelationship;
+import db.neo4j.TweetProperty;
+
 public class EmbeddedNeo4jClient 
 {
     // --- Fields ---
@@ -26,17 +29,11 @@ public class EmbeddedNeo4jClient
 	private GlobalGraphOperations global_db_op;
 	public HashMap<String, Long> node_list = new HashMap<String, Long>();
 	public HashMap<String, Relationship> rel_list = new HashMap<String, Relationship>();
-    private static enum RelTypes implements RelationshipType
-    {
-        MENTIONS,
-        SHARES_URL, 
-        HASH_TAGS
-    }
 	
     // --- Constructor ---
-    public EmbeddedNeo4jClient(String db_path) {
+    public EmbeddedNeo4jClient(String db_path) 
+    {
     	this.db_path = db_path;
-    	this.connect();
     }
 
     // --- Methods ---
@@ -45,6 +42,13 @@ public class EmbeddedNeo4jClient
      */
     public boolean connect() 
     {
+    	String key = null;
+    	String value = null;
+    	Long p_id = null;
+    	Node start_node = null;
+    	Node end_node = null;
+    	RelationshipType rel_type = null;
+    	
     	// create db object
     	this.graph_db = new EmbeddedGraphDatabase(this.db_path);
         registerShutdownHook(this.graph_db);
@@ -53,14 +57,44 @@ public class EmbeddedNeo4jClient
         node_list.clear();
         rel_list.clear();
         
-        // load all nodes to a node_name_list
         this.global_db_op = GlobalGraphOperations.at(this.graph_db);
-        for (Node n : global_db_op.getAllNodes()) {
-        	for (String property: n.getPropertyKeys()) {
+        for (Node node : global_db_op.getAllNodes()) {
+	        // load all nodes to a node_list
+        	for (String property: node.getPropertyKeys()) {
         		if (property.equals("weight") == false) {
-        			String value = (String) n.getProperty(property);
-        			Long p_id = n.getId();
+        			value = (String) node.getProperty(property);
+        			p_id = node.getId();
 		        	this.node_list.put(value, p_id);
+        		}
+        	}
+        	
+        	// load all relationships to rel_list
+        	Iterable<Relationship> rels = node.getRelationships();
+        	for (Relationship rel: rels) {
+        		if ((end_node = rel.getEndNode()) != node) {
+        			rel_type = rel.getType();
+        			start_node = rel.getStartNode();
+        			
+        			if (rel_type.equals(TweetRelationship.Type.MENTIONS)) {
+	        	    	key = "(" + start_node.getProperty(TweetProperty.USER) 
+	        	    			+ ")--[" + rel_type + "]-->("
+	        	    			+ end_node.getProperty(TweetProperty.USER) 
+	        	    			+ ")";
+        			} else if (rel_type.equals(TweetRelationship.Type.HASH_TAGS)) {
+	        	    	key = "(" + start_node.getProperty(TweetProperty.USER) 
+	        	    			+ ")--[" + rel_type + "]-->("
+	        	    			+ end_node.getProperty(TweetProperty.HASH_TAG) 
+	        	    			+ ")";
+        			} else if (rel_type.equals(TweetRelationship.Type.SHARES_URL)) {
+	        	    	key = "(" + start_node.getProperty(TweetProperty.USER) 
+	        	    			+ ")--[" + rel_type + "]-->("
+	        	    			+ end_node.getProperty(TweetProperty.URL) 
+	        	    			+ ")";
+	        		} else {
+	        			throw new RuntimeException();
+	        		}
+        			
+        			this.rel_list.put(key, rel);
         		}
         	}
         }
@@ -109,7 +143,7 @@ public class EmbeddedNeo4jClient
     	
     	// create a node for the author
     	if (nodeExists(tweet_author) == false) 
-        	createNewNode("user", tweet_author);
+        	addNewNode(TweetProperty.USER, tweet_author);
     	
     	// iterate through user_mentions, hash tags and urls and create
     	// relationships with the author node
@@ -118,10 +152,15 @@ public class EmbeddedNeo4jClient
     	for (UserMentionEntity user_mention : user_mentions) {
     		user_mentioned = user_mention.getScreenName();
     		if (user_mentioned != null) {
-	    		if (nodeExists(user_mentioned))
+	    		if (nodeExists(user_mentioned)) {
 	    			incrementNodeWeight(user_mentioned);
-	    		else 
-	        		createNewNode("user", user_mentioned);
+	    		} else {
+	        		addNewNode(TweetProperty.USER, user_mentioned);
+	        		createRelationship(
+	        				tweet_author, 
+	        				user_mentioned, 
+	        				TweetRelationship.Type.MENTIONS);
+	    		}
     		}
     	}
     	
@@ -130,10 +169,15 @@ public class EmbeddedNeo4jClient
     	for (HashtagEntity hash_tag: hash_tags) {
     		tag = hash_tag.getText();
     		if (tag != null) {
-	    		if (nodeExists(tag)) 
+	    		if (nodeExists(tag)) {
 	    			incrementNodeWeight(tag);
-	    		else
-	        		createNewNode("hash_tag", tag);
+	    		} else {
+	        		addNewNode(TweetProperty.HASH_TAG, tag);
+	        		createRelationship(
+	        				tweet_author, 
+	        				tag, 
+	        				TweetRelationship.Type.HASH_TAGS);
+	    		}
     		}
     	}
     	
@@ -142,10 +186,15 @@ public class EmbeddedNeo4jClient
     	for (URLEntity url: urls) {
     		display_url = url.getDisplayURL();
     		if (display_url != null) {
-	    		if (nodeExists(display_url)) 
+	    		if (nodeExists(display_url)) {
 	    			incrementNodeWeight(display_url);
-	    		else
-	        		createNewNode("url", display_url);
+	    		} else {
+	        		addNewNode(TweetProperty.URL, display_url);
+	        		createRelationship(
+	        				tweet_author, 
+	        				display_url, 
+	        				TweetRelationship.Type.SHARES_URL);
+	    		}
     		}
     	}
     }
@@ -167,7 +216,7 @@ public class EmbeddedNeo4jClient
      * @param node_name
      * @return
      */
-    public boolean createNewNode(String property, String value) 
+    public boolean addNewNode(String property, String value) 
     {
     	boolean outcome = false;
     	
@@ -199,7 +248,7 @@ public class EmbeddedNeo4jClient
      * @return
      * 		True or False
      */
-    public boolean deleteNode(String node_name) 
+    public boolean rmNode(String node_name) 
     {
     	boolean outcome = false;
         Transaction tx = this.graph_db.beginTx();
@@ -220,6 +269,7 @@ public class EmbeddedNeo4jClient
         	// remove node in node_list
         	node_list.remove(node_name);
         	
+        	// commit
             tx.success();
         } finally {
         	tx.finish();
@@ -236,10 +286,8 @@ public class EmbeddedNeo4jClient
      */
     public boolean nodeExists(String node_name)
     {
-    	if (this.node_list.containsKey((String) node_name)) 
-    		return true;
-    	else 
-    		return false;
+    	if (this.node_list.containsKey((String) node_name)) return true;
+    	else return false;
     }
     
     /**
@@ -251,7 +299,7 @@ public class EmbeddedNeo4jClient
     public boolean incrementNodeWeight(String node_name) 
     {
     	boolean outcome = false;
-        Transaction tx = graph_db.beginTx();
+        Transaction tx = this.graph_db.beginTx();
         
         try {
 	    	// obtain node
@@ -284,54 +332,88 @@ public class EmbeddedNeo4jClient
     public Relationship getRelationship(
     		String node_1, 
     		String node_2,
-    		String rel_type) 
+    		RelationshipType rel_type) 
     {
-    	String key = node_1 + "-" + node_2 + ":[" + rel_type + "]";
+    	String key = "(" + node_1 + ")--[" + rel_type + "]-->(" + node_2 + ")";
     	return  rel_list.get(key);
     }
   
     /**
-     * Create relationship between node 1 and node 2
+     * Create relationship between two nodes
+     * @param node_1
+     * @param node_2
+     * @param rel_type
+     * @return
+     */
+    public boolean addRelationship(
+    			Node node_1, 
+    			Node node_2, 
+    			RelationshipType rel_type) throws RuntimeException
+    {
+    	Relationship rel = null;
+    	String n_1 = "";
+    	String n_2 = "";
+    	
+    	Transaction tx = this.graph_db.beginTx();
+		try {
+	    	// create corresponding relationship
+	    	if (rel_type.equals(TweetRelationship.Type.MENTIONS)) {
+		    	rel = node_1.createRelationshipTo(node_2, rel_type);
+		    	n_1 = (String) node_1.getProperty(TweetProperty.USER);
+		    	n_2 = (String) node_2.getProperty(TweetProperty.USER);
+	    	} else if (rel_type.equals(TweetRelationship.Type.HASH_TAGS)) {
+		    	rel = node_1.createRelationshipTo(node_2, rel_type);
+		    	n_1 = (String) node_1.getProperty(TweetProperty.USER);
+		    	n_2 = (String) node_2.getProperty(TweetProperty.HASH_TAG);
+	    	} else if (rel_type.equals(TweetRelationship.Type.SHARES_URL)) {
+		    	rel = node_1.createRelationshipTo(node_2, rel_type);
+		    	n_1 = (String) node_1.getProperty(TweetProperty.USER);
+		    	n_2 = (String) node_2.getProperty(TweetProperty.URL);
+	    	} else {
+	    		throw new RuntimeException();
+	    	}
+	    	
+	    	// commit
+		    tx.success();
+		} finally {
+			tx.finish();
+		
+	    	// add relationship to rel_list
+	    	String key = "(" + n_1 + ")--[" + rel_type + "]-->(" + n_2 + ")";
+	    	rel_list.put(key, rel);
+		}
+    	
+    	return false;
+    }
+    
+    /**
+     * Create relationship between two nodes
      * @param node_1
      * @param node_2
      * @param rel_type
      * @return
      */
     public boolean createRelationship(
-    			Node node_1, 
-    			Node node_2, 
-    			String rel_type) 
+    		String node_1,
+    		String node_2,
+    		RelationshipType rel_type) 
     {
-    	Relationship rel = null;
-    	String first_node = "";
-    	String second_node = "";
+    	Node first_node = this.graph_db.getNodeById(node_list.get(node_1));
+    	Node second_node = this.graph_db.getNodeById(node_list.get(node_2));
     	
-    	// create corresponding relationship
-    	if (rel_type.equals("mentions")) {
-	    	rel = node_1.createRelationshipTo(node_2, RelTypes.MENTIONS);
-	    	first_node = (String) node_1.getProperty("user");
-	    	second_node = (String) node_2.getProperty("user");
-    	} else if (rel_type.equals("hash_tagged")) {
-	    	rel = node_1.createRelationshipTo(node_2, RelTypes.HASH_TAGS);
-	    	first_node = (String) node_1.getProperty("user");
-	    	second_node = (String) node_2.getProperty("hashtag");
-    	} else if (rel_type.equals("shared_url")) {
-	    	rel = node_1.createRelationshipTo(node_2, RelTypes.SHARES_URL);
-	    	first_node = (String) node_1.getProperty("user");
-	    	second_node = (String) node_2.getProperty("url");
-    	}
-    	
-    	// add relationship to rel_list
-    	String key = first_node + "-" + second_node + ":[" + rel_type + "]";
-    	rel_list.put(key, rel);
-    	
-    	return false;
+    	return addRelationship(first_node, second_node, rel_type);
     }
     
+    /**
+     * Remove relationship between two nodes
+     * @param node_1
+     * @param node_2
+     * @param rel_type
+     */
     public void removeRelationship(
     		String node_1,
     		String node_2,
-    		String rel_type)
+    		RelationshipType rel_type)
     {
     	getRelationship(node_1, node_2, rel_type).delete();
     }

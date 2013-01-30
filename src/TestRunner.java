@@ -1,11 +1,13 @@
 import java.util.Map;
 
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
 import db.DBDetails;
 import db.neo4j.CypherQueryController;
 import db.neo4j.EmbeddedNeo4jClient;
 import db.neo4j.Neo4jTweetImporter;
+import db.neo4j.TweetRelationship;
 import db.solr.SolrClient;
 import dbtest.couchbase.CouchbaseAggregationTest;
 import dbtest.mongodb.MongoDBAggregationTest;
@@ -69,20 +71,56 @@ public class TestRunner
         
         EmbeddedNeo4jClient neo4j = new EmbeddedNeo4jClient(neo4j_dbpath);
         Neo4jTweetImporter neo4j_importer = new Neo4jTweetImporter(neo4j);
-        CypherQueryController query_engine = new CypherQueryController(neo4j);
         
-        neo4j.dropDatabase();
+//        neo4j.dropDatabase();
         neo4j.connect();
+//        neo4j_importer.importTweets(test_data);
         
-        neo4j_importer.importTweets(test_data);
+        long node_id = neo4j.node_list.get("CGreentown");
         
-        for (Map.Entry<String, Relationship> entry : neo4j.rel_list.entrySet())
-        	System.out.println(entry.getKey());
+//        for (Map.Entry<String, Long> entry: neo4j.node_list.entrySet()) {
+//        	Node node = (Node) neo4j.graph_db.getNodeById(entry.getValue());
+//        	if (node.hasProperty("screen_name")) {
+////	        	System.out.println(entry.getKey() + ":" + entry.getValue());
+//	        	System.out.println(node.getProperty("screen_name") + " : " + node.getProperty("weight"));
+////	        	System.out.println();
+//        	}
+//        }
         
-        long id = neo4j.node_list.get("London2012");
-        String q = "START n=node(" + id + ") " +
-//        		"MATCH n-[:hash_tagged]->fof " +
-        		"RETURN n";
+//        for (Map.Entry<String, Relationship> entry: neo4j.rel_list.entrySet()) {
+//        	if (entry.getValue().getType().equals(TweetRelationship.Type.SHARES_URL)) {
+//        		Relationship rel = entry.getValue();
+//        		Node start_node = rel.getStartNode();
+//        		Node end_node = rel.getEndNode();
+//        		System.out.println(start_node.getProperty("screen_name") + " ---> " + end_node.getProperty("display_url"));
+//        	}
+//        }
+        
+        for (Map.Entry<String, Relationship> entry: neo4j.rel_list.entrySet()) {
+        	if (entry.getValue().getType().equals(TweetRelationship.Type.HASH_TAGS)) {
+        		Relationship rel = entry.getValue();
+        		Node start_node = rel.getStartNode();
+        		Node end_node = rel.getEndNode();
+        		System.out.println(start_node.getProperty("screen_name") + " ---> " + end_node.getProperty("hash_tag"));
+        	}
+        }
+        
+        CypherQueryController query_engine = new CypherQueryController(neo4j);
+        System.out.println("node_id: " + node_id);
+        String q = "START n = node(" + node_id + ") " +
+        		"MATCH n-[:MENTIONS]->user " +
+        		"RETURN n.screen_name?, user.screen_name?";
         query_engine.query(q);
+        
+        q = "START n = node(" + node_id + ") " +
+        		"MATCH n-[:HASH_TAGS]->tag " +
+        		"RETURN n.screen_name?, tag.hash_tag?";
+        query_engine.query(q);
+        
+//        q = "START n = node(" + node_id + ") " +
+//        		"MATCH n-[:SHARES_URL]->url " +
+//        		"RETURN n.screen_name?, url.display_url?";
+//        query_engine.query(q);
+        
 	}
 }
