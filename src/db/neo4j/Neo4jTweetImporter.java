@@ -38,6 +38,7 @@ public class Neo4jTweetImporter
 	    ArrayList<Long> bad_tweets_record = new ArrayList<Long>();
 		long limit = tweets;
 		long count = 0;
+		Status tweet = null;
 	    
 		try {
 			LineIterator line_iter = FileUtils.lineIterator(new File(fp));
@@ -50,14 +51,16 @@ public class Neo4jTweetImporter
 				// try and parse tweet
 				try {
 					json_string = line_iter.next();
-					Status tweet = DataObjectFactory.createStatus(json_string);
-					this.db.addTweet(tweet);
+					tweet = DataObjectFactory.createStatus(json_string);
 				} catch (TwitterException e) {
 					System.out.println("error! bad tweet on line: " + count);
 					bad_tweets_record.add(count);
 					bad_tweets++;
 				} 
 				
+				if (tweet != null) this.db.addTweet(tweet);
+				
+				tweet = null;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
