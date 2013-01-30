@@ -76,7 +76,7 @@ public class TestRunner
         neo4j.connect();
 //        neo4j_importer.importTweets(test_data);
         
-        long node_id = neo4j.node_list.get("CGreentown");
+        long node_id = neo4j.node_list.get("TeamCanada");
         
 //        for (Map.Entry<String, Long> entry: neo4j.node_list.entrySet()) {
 //        	Node node = (Node) neo4j.graph_db.getNodeById(entry.getValue());
@@ -108,14 +108,14 @@ public class TestRunner
         CypherQueryController query_engine = new CypherQueryController(neo4j);
         System.out.println("node_id: " + node_id);
         String q = "START n = node(" + node_id + ") " +
-        		"MATCH n-[:MENTIONS]->user " +
-        		"RETURN n.screen_name?, user.screen_name?";
+        		"MATCH n<-[:HASH_TAGS]-user " +
+        		"RETURN n.hash_tag?, user.screen_name?";
         query_engine.query(q);
         
-        q = "START n = node(" + node_id + ") " +
-        		"MATCH n-[:HASH_TAGS]->tag " +
-        		"RETURN n.screen_name?, tag.hash_tag?";
-        query_engine.query(q);
+//        q = "START n = node(" + node_id + ") " +
+//        		"MATCH n-[:HASH_TAGS]->tag " +
+//        		"RETURN n.screen_name?, tag.hash_tag?";
+//        query_engine.query(q);
         
 //        q = "START n = node(" + node_id + ") " +
 //        		"MATCH n-[:SHARES_URL]->url " +
