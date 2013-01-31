@@ -2,7 +2,9 @@ package db.neo4j;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 
+import org.neo4j.cypher.SyntaxException;
 import org.neo4j.cypher.javacompat.*;
 
 public class CypherQueryController 
@@ -16,18 +18,43 @@ public class CypherQueryController
 	}
 
 	// --- Methods ---
+	/**
+	 * Query neo4j
+	 * @param q
+	 * 		query string
+	 */
 	public void query(String q) {
-		ExecutionResult result = (ExecutionResult) query_engine.execute(q);
-		String rows = "";
+		try {
+			ExecutionResult result = (ExecutionResult) query_engine.execute(q);
+			String rows = "";
 		
-		for (Map<String, Object> row : result) {
-			for (Entry<String, Object> column : row.entrySet()) {
-				rows += column.getKey() + ": " + column.getValue() + "; ";
+			for (Map<String, Object> row : result) {
+				for (Entry<String, Object> column : row.entrySet()) {
+					rows += column.getKey() + ": " + column.getValue() + "; ";
+					rows += "\n";
+				}
 				rows += "\n";
 			}
-			rows += "\n";
+			
+			System.out.println(rows);
+		} catch (SyntaxException e) {
+			System.out.println(e);
 		}
+	}
+	
+	/**
+	 * Lauches a live query interpreter
+	 */
+	public void launchQueryInterpreter() 
+	{
+		boolean loop = true;
+		Scanner reader = new Scanner(System.in);
+		String query = "";
 		
-		System.out.println(rows);
+		while(loop) {
+			System.out.print("> ");
+			query = reader.nextLine();
+			this.query(query);
+		}
 	}
 }
