@@ -15,14 +15,11 @@ import org.neo4j.graphdb.index.RelationshipIndex;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.impl.util.FileUtils;
 
-import twitter4j.HashtagEntity;
-import twitter4j.Status;
-import twitter4j.URLEntity;
-import twitter4j.UserMentionEntity;
-
 import db.neo4j.TweetRelationship;
+import db.neo4j.NodeType;
 
-public class EmbeddedNeo4jClient {
+public class EmbeddedNeo4jClient 
+{
 	// --- Fields ---
 	public GraphDatabaseService graph_db;
 	private String db_path;
@@ -35,15 +32,19 @@ public class EmbeddedNeo4jClient {
 	private RelationshipIndex shares_rel_index;
 
 	// --- Constructor ---
-	public EmbeddedNeo4jClient(String db_path) {
+	public EmbeddedNeo4jClient(String db_path) 
+	{
 		this.db_path = db_path;
 	}
 
 	// --- Methods ---
 	/**
 	 * Connect to embedded database
+	 * @return
+	 * 		True or false for success or failure
 	 */
-	public boolean connect() {
+	public boolean connect() 
+	{
 		// create db object
 		this.graph_db = new EmbeddedGraphDatabase(this.db_path);
 		registerShutdownHook(this.graph_db);
@@ -58,19 +59,20 @@ public class EmbeddedNeo4jClient {
 
 	/**
 	 * Initializes indexes
-	 * 
-	 * @return True or false for success or failure
+	 * @return
+	 * 		True or false for success or failure
 	 */
-	private boolean initIndexes() {
+	private boolean initIndexes() 
+	{
 		try {
 			index_manager = this.graph_db.index();
 			
 			user_index = index_manager.forNodes("users");
 			hashtag_index = index_manager.forNodes("hashtags");
 			url_index = index_manager.forNodes("urls");
-			mentions_rel_index = index_manager.forRelationships("mentions");
-			hashtags_rel_index = index_manager.forRelationships("hashtags");
-			shares_rel_index = index_manager.forRelationships("shares");
+			mentions_rel_index = index_manager.forRelationships("rel_mentions");
+			hashtags_rel_index = index_manager.forRelationships("rel_hashtags");
+			shares_rel_index = index_manager.forRelationships("rel_shares");
 
 		} catch (Exception e) {
 			System.out.println(e);
@@ -83,7 +85,8 @@ public class EmbeddedNeo4jClient {
 	/**
 	 * Disconnect from embedded database
 	 */
-	public void disconnect() {
+	public void disconnect() 
+	{
 		System.out.println("shutting down graph database [neo4j]");
 		this.graph_db.shutdown();
 	}
@@ -93,7 +96,8 @@ public class EmbeddedNeo4jClient {
 	 * 
 	 * @param graphDb
 	 */
-	private static void registerShutdownHook(final GraphDatabaseService graphDb) {
+	private static void registerShutdownHook(final GraphDatabaseService graphDb) 
+	{
 		// Registers a shutdown hook for the Neo4j instance so that it
 		// shuts down nicely when the VM exits (even if you "Ctrl-C" the
 		// running example before it's completed)
@@ -106,95 +110,10 @@ public class EmbeddedNeo4jClient {
 	}
 
 	/**
-	 * Insert tweet
-	 * 
-	 * @param tweet
-	 */
-	public boolean addTweet(Status tweet) {
-		try {
-			String tweet_author = tweet.getUser().getScreenName();
-			UserMentionEntity[] user_mentions = tweet.getUserMentionEntities();
-			HashtagEntity[] hash_tags = tweet.getHashtagEntities();
-			URLEntity[] urls = tweet.getURLEntities();
-			Node author_node;
-			Node node;
-
-			// create a node for the author
-			author_node = nodeExists(tweet_author, NodeType.USER);
-			if (author_node == null) {
-				addNewNode(NodeType.USER, tweet_author);
-				author_node = nodeExists(tweet_author, NodeType.USER);
-			}
-
-			// iterate through user_mentions, hash tags and urls and create
-			// relationships with the author node
-			// USER MENTIONED
-			String user_mentioned;
-			for (UserMentionEntity user_mention : user_mentions) {
-				user_mentioned = user_mention.getScreenName();
-				if (user_mentioned != null) {
-					node = nodeExists(user_mentioned, NodeType.USER);
-					if (node != null) {
-						incrementNodeWeight(node);
-					} else {
-						addNewNode(NodeType.USER, user_mentioned);
-						node = nodeExists(user_mentioned, NodeType.USER);
-					}
-					createRelationship(
-							author_node, 
-							node, 
-							TweetRelationship.Type.MENTIONS);
-				}
-			}
-
-			// HASH TAGGED
-			String tag;
-			for (HashtagEntity hash_tag : hash_tags) {
-				tag = hash_tag.getText();
-				if (tag != null) {
-					node = nodeExists(tag, NodeType.HASH_TAG);
-					if (node != null) {
-						incrementNodeWeight(node);
-					} else {
-						addNewNode(NodeType.HASH_TAG, tag);
-						node = nodeExists(tag, NodeType.HASH_TAG);
-					}
-					createRelationship(
-							author_node, 
-							node, 
-							TweetRelationship.Type.HASH_TAGS);
-				}
-			}
-
-			// SHARED URLS
-			String display_url;
-			for (URLEntity url : urls) {
-				display_url = url.getDisplayURL();
-				if (display_url != null) {
-					node = nodeExists(display_url, NodeType.URL);
-					if (node != null) {
-						incrementNodeWeight(node);
-					} else {
-						addNewNode(NodeType.URL, display_url);
-						node = nodeExists(display_url, NodeType.URL);
-					}
-					createRelationship(
-							author_node, 
-							node, 
-							TweetRelationship.Type.HASH_TAGS);
-				}
-			}
-		} catch (NullPointerException e) {
-			e.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-
-	/**
 	 * Drops the graph database
 	 */
-	public void dropDatabase() {
+	public void dropDatabase() 
+	{
 		try {
 			FileUtils.deleteRecursively(new File(this.db_path));
 		} catch (IOException e) {
@@ -208,7 +127,8 @@ public class EmbeddedNeo4jClient {
 	 * @param node_name
 	 * @return Node or null for not exist
 	 */
-	public Node nodeExists(String node_name, String node_type) {
+	public Node nodeExists(String node_name, String node_type) 
+	{
 		IndexHits<Node> hits;
 		Node node = null;
 
@@ -236,7 +156,8 @@ public class EmbeddedNeo4jClient {
 	 * @param node_name
 	 * @return
 	 */
-	public boolean addNewNode(String node_type, String value) {
+	public boolean addNode(String node_type, String value) 
+	{
 		boolean outcome = false;
 
 		if (nodeExists(value, node_type) != null)
@@ -275,7 +196,8 @@ public class EmbeddedNeo4jClient {
 	 * @param node_name
 	 * @return True or False
 	 */
-	public boolean rmNode(String node_name, String node_type) {
+	public boolean deleteNode(String node_name, String node_type) 
+	{
 		boolean outcome = false;
 		Transaction tx = this.graph_db.beginTx();
 
@@ -314,7 +236,8 @@ public class EmbeddedNeo4jClient {
 	 * @param node_name
 	 * @return True or False
 	 */
-	public boolean incrementNodeWeight(Node node) {
+	public boolean incrementNodeWeight(Node node) 
+	{
 		boolean outcome = false;
 		Transaction tx = this.graph_db.beginTx();
 
@@ -460,7 +383,8 @@ public class EmbeddedNeo4jClient {
 	 * 
 	 * @return
 	 */
-	public boolean connected() {
+	public boolean connected() 
+	{
 		if (this.graph_db != null)
 			return true;
 		else

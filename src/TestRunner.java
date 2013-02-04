@@ -58,6 +58,7 @@ public class TestRunner
 	{
 		TestRunner test = new TestRunner();
 		
+		String neo4j_server_uri = "http://localhost:7474/db/data/";
         String db_host = "http://avoss-cloud.cs.st-andrews.ac.uk";
         int db_port = 1234;
         String neo4j_dbpath = "/home/chris/neo4j_test/";
@@ -71,9 +72,7 @@ public class TestRunner
         EmbeddedNeo4jClient neo4j = new EmbeddedNeo4jClient(neo4j_dbpath);
         Neo4jTweetImporter neo4j_importer = new Neo4jTweetImporter(neo4j);
         
-        neo4j.dropDatabase();
         neo4j.connect();
-        neo4j_importer.importTweets(test_data);
         
 //        long node_id = neo4j.node_list.get("London2012" + "[" + NodeType.USER + "]");
 //        System.out.println("node_id: " + node_id);
@@ -83,8 +82,8 @@ public class TestRunner
 //        for (Relationship rel :node.getRelationships()) counter++;
 //        System.out.println("relationships: " + counter);
         
-//        CypherQueryController query_engine = new CypherQueryController(neo4j);
-//        query_engine.launchQueryInterpreter();
+        CypherQueryController query_engine = new CypherQueryController(neo4j);
+        query_engine.launchQueryInterpreter();
 
         
 //        long node_id = neo4j.node_list.get("TeamCanada");
