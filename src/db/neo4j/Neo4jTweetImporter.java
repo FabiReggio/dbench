@@ -59,7 +59,6 @@ public class Neo4jTweetImporter
 				}
 
 				if (tweet != null) this.db.addTweet(tweet);
-
 				tweet = null;
 			}
 		} catch (IOException e) {
