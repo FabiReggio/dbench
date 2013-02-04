@@ -56,6 +56,7 @@ public class Neo4jTweetImporter
 					System.out.println("error! bad tweet on line: " + count);
 					bad_tweets_record.add(count);
 					bad_tweets++;
+					tweet = null;
 				} 
 				
 				if (tweet != null) this.db.addTweet(tweet);
