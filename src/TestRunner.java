@@ -7,8 +7,7 @@ import db.DBDetails;
 import db.neo4j.CypherQueryController;
 import db.neo4j.EmbeddedNeo4jClient;
 import db.neo4j.Neo4jTweetImporter;
-import db.neo4j.TweetRelationship;
-import db.solr.SolrClient;
+import db.neo4j.NodeType;
 import dbtest.couchbase.CouchbaseAggregationTest;
 import dbtest.mongodb.MongoDBAggregationTest;
 
@@ -62,8 +61,8 @@ public class TestRunner
 		
         String db_host = "http://avoss-cloud.cs.st-andrews.ac.uk";
         int db_port = 1234;
-        String neo4j_dbpath = "/Users/chutsu/neo4j_test/";
-        String test_data = "/Users/chutsu/sandbox/twitter_data/test.jsonl";
+        String neo4j_dbpath = "/home/chris/neo4j_test/";
+        String test_data = "/home/chris/olympics3.jsonl";
 
 //        SolrClient solr = new SolrClient(db_host, db_port);
 //        solr.deleteAll();
@@ -74,17 +73,27 @@ public class TestRunner
         
 //        neo4j.dropDatabase();
         neo4j.connect();
-//        neo4j_importer.importTweets(test_data);
+        neo4j_importer.importTweets(test_data);
         
-        long node_id = neo4j.node_list.get("TeamCanada");
+//        long node_id = neo4j.node_list.get("London2012" + "[" + NodeType.USER + "]");
+//        System.out.println("node_id: " + node_id);
+//        Node node = neo4j.graph_db.getNodeById(node_id);
+//        
+//        int counter = 0;
+//        for (Relationship rel :node.getRelationships()) counter++;
+//        System.out.println("relationships: " + counter);
+        
+//        CypherQueryController query_engine = new CypherQueryController(neo4j);
+//        query_engine.launchQueryInterpreter();
+
+        
+//        long node_id = neo4j.node_list.get("TeamCanada");
         
 //        for (Map.Entry<String, Long> entry: neo4j.node_list.entrySet()) {
 //        	Node node = (Node) neo4j.graph_db.getNodeById(entry.getValue());
-//        	if (node.hasProperty("screen_name")) {
-////	        	System.out.println(entry.getKey() + ":" + entry.getValue());
-//	        	System.out.println(node.getProperty("screen_name") + " : " + node.getProperty("weight"));
-////	        	System.out.println();
-//        	}
+//        	if (node.hasProperty(NodeType.HASH_TAG)) {
+//	        	System.out.println(node.getProperty(NodeType.HASH_TAG) + " : " + node.getProperty("weight"));
+//        	} 
 //        }
         
 //        for (Map.Entry<String, Relationship> entry: neo4j.rel_list.entrySet()) {
@@ -96,21 +105,21 @@ public class TestRunner
 //        	}
 //        }
         
-        for (Map.Entry<String, Relationship> entry: neo4j.rel_list.entrySet()) {
-        	if (entry.getValue().getType().equals(TweetRelationship.Type.HASH_TAGS)) {
-        		Relationship rel = entry.getValue();
-        		Node start_node = rel.getStartNode();
-        		Node end_node = rel.getEndNode();
-        		System.out.println(start_node.getProperty("screen_name") + " ---> " + end_node.getProperty("hash_tag"));
-        	}
-        }
+//        for (Map.Entry<String, Relationship> entry: neo4j.rel_list.entrySet()) {
+//        	if (entry.getValue().getType().equals(TweetRelationship.Type.HASH_TAGS)) {
+//       		Relationship rel = entry.getValue();
+//        		Node start_node = rel.getStartNode();
+//        		Node end_node = rel.getEndNode();
+//        		System.out.println(start_node.getProperty("screen_name") + " ---> " + end_node.getProperty("hash_tag"));
+//        	}
+//        }
         
-        CypherQueryController query_engine = new CypherQueryController(neo4j);
-        System.out.println("node_id: " + node_id);
-        String q = "START n = node(" + node_id + ") " +
-        		"MATCH n<-[:HASH_TAGS]-user " +
-        		"RETURN n.hash_tag?, user.screen_name?";
-        query_engine.query(q);
+//        CypherQueryController query_engine = new CypherQueryController(neo4j);
+//        System.out.println("node_id: " + node_id);
+//        String q = "START n = node(" + node_id + ") " +
+//        		"MATCH n<-[:HASH_TAGS]-user " +
+//        		"RETURN n.hash_tag?, user.screen_name?";
+//        query_engine.query(q);
         
 //        q = "START n = node(" + node_id + ") " +
 //        		"MATCH n-[:HASH_TAGS]->tag " +
