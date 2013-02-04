@@ -11,23 +11,23 @@ import twitter4j.Status;
 import twitter4j.TwitterException;
 import twitter4j.json.DataObjectFactory;
 
-public class Neo4jTweetImporter 
+public class Neo4jTweetImporter
 {
 	// --- Fields ---
 	private EmbeddedNeo4jClient db;
-	
+
 	// --- Constructors ---
-	public Neo4jTweetImporter(EmbeddedNeo4jClient db) 
+	public Neo4jTweetImporter(EmbeddedNeo4jClient db)
 	{
 		this.db = db;
 	}
-	
+
 	// --- Methods ---
 	/**
-	 * Add Tweets to Neo4j 
+	 * Add Tweets to Neo4j
 	 * @param file
 	 * @param tweets
-	 * 		Number of tweets to add 
+	 * 		Number of tweets to add
 	 * @return
 	 * 		True or False
 	 */
@@ -39,15 +39,15 @@ public class Neo4jTweetImporter
 		long limit = tweets;
 		long count = 0;
 		Status tweet = null;
-	    
+
 		try {
 			LineIterator line_iter = FileUtils.lineIterator(new File(fp));
-			
+
 			while (line_iter.hasNext()) {
 				// check limit
 				if (count == limit) break;
 				count++;
-				
+
 				// try and parse tweet
 				try {
 					json_string = line_iter.next();
@@ -56,10 +56,10 @@ public class Neo4jTweetImporter
 					System.out.println("error! bad tweet on line: " + count);
 					bad_tweets_record.add(count);
 					bad_tweets++;
-				} 
-				
+				}
+
 				if (tweet != null) this.db.addTweet(tweet);
-				
+
 				tweet = null;
 			}
 		} catch (IOException e) {
@@ -76,12 +76,12 @@ public class Neo4jTweetImporter
 		}
 		return true;
 	}
-	
+
 	/**
-	 * Add Tweets to Neo4j 
+	 * Add Tweets to Neo4j
 	 * @param file
 	 * @param tweets
-	 * 		Number of tweets to add 
+	 * 		Number of tweets to add
 	 * @return
 	 * 		True or False
 	 */
