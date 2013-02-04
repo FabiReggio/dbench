@@ -7,7 +7,6 @@ import db.DBDetails;
 import db.neo4j.CypherQueryController;
 import db.neo4j.EmbeddedNeo4jClient;
 import db.neo4j.Neo4jTweetImporter;
-import db.neo4j.NodeType;
 import dbtest.couchbase.CouchbaseAggregationTest;
 import dbtest.mongodb.MongoDBAggregationTest;
 
@@ -62,7 +61,8 @@ public class TestRunner
         String db_host = "http://avoss-cloud.cs.st-andrews.ac.uk";
         int db_port = 1234;
         String neo4j_dbpath = "/home/chris/neo4j_test/";
-        String test_data = "/home/chris/olympics3.jsonl";
+//        String test_data = "/home/chris/olympics3.jsonl";
+        String test_data = "/home/chris/test.jsonl";
 
 //        SolrClient solr = new SolrClient(db_host, db_port);
 //        solr.deleteAll();
@@ -71,7 +71,7 @@ public class TestRunner
         EmbeddedNeo4jClient neo4j = new EmbeddedNeo4jClient(neo4j_dbpath);
         Neo4jTweetImporter neo4j_importer = new Neo4jTweetImporter(neo4j);
         
-//        neo4j.dropDatabase();
+        neo4j.dropDatabase();
         neo4j.connect();
         neo4j_importer.importTweets(test_data);
         

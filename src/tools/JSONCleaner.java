@@ -11,7 +11,6 @@ import org.apache.commons.io.LineIterator;
 public class JSONCleaner {
 	// --- Fields ---
 	private String current_line = "";
-	private String previous_line = "";
 	
 	// --- Constructors ---
 	public JSONCleaner() {}

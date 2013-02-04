@@ -44,6 +44,10 @@ public class Neo4jTweetImporter
 			LineIterator line_iter = FileUtils.lineIterator(new File(fp));
 
 			while (line_iter.hasNext()) {
+				// display line count
+				if (count != 0 && (count % 1000) == 0)
+					System.out.println("inserted:" + count);
+				
 				// check limit
 				if (count == limit) break;
 				count++;
