@@ -4,24 +4,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class CouchbaseRestfulURLFactory 
+public class CouchbaseRestfulURLFactory
 {
 	// --- Fields ---
 	private String host;
 	private String port;
 	private String restful_port;
-	
+
 	// --- Constructors ---
 	public CouchbaseRestfulURLFactory(
-			String host, 
-			String port, 
-			String restful_port) 
+			String host,
+			String port,
+			String restful_port)
 	{
 		this.host = host;
 		this.port = port;
 		this.restful_port = restful_port;
 	}
-	
+
 	// --- Methods ---
 	/**
 	 * Builds a full url based on the array list of elements provided
@@ -31,15 +31,15 @@ public class CouchbaseRestfulURLFactory
 	private String buildUrl(ArrayList<String> url_elements)
 	{
 		String url = "";
-		
-		for (String element : url_elements) 
+
+		for (String element : url_elements)
 			url += element + "/";
-		
+
 		url_elements.clear();
-		
+
 		return url;
 	}
-	
+
 	/**
 	 * Builds a single string containing the settings for restful use
 	 * @param settings
@@ -48,17 +48,17 @@ public class CouchbaseRestfulURLFactory
 	private String settingsBuilder(HashMap<String, String> settings)
 	{
 		String set = "";
-		
+
 		Iterator<String> iter = settings.keySet().iterator();
 		while (iter.hasNext()) {
 			String key = iter.next();
 			String value = settings.get(key);
 			set +=  key + "=" + value + "&";
 		}
-		
+
 		return set;
 	}
-	
+
 	/**
 	 * Bucket Url
 	 * @param bucket
@@ -72,18 +72,18 @@ public class CouchbaseRestfulURLFactory
 		url_elements.add("default");
 		url_elements.add("buckets");
 		url_elements.add(bucket);
-		
-		return buildUrl(url_elements); 
+
+		return buildUrl(url_elements);
 	}
-	
+
 	/**
 	 * Views Url
 	 * @return
 	 * 		view url
 	 */
 	public String getViewUrl(
-			String bucket, 
-			String doc_name, 
+			String bucket,
+			String doc_name,
 			String view_name,
 			HashMap<String, String> view_settings)
 	{
@@ -93,10 +93,10 @@ public class CouchbaseRestfulURLFactory
 		url_elements.add("_design");
 		url_elements.add(doc_name);
 		url_elements.add("_view");
-		String url = buildUrl(url_elements) 
-				+ view_name + "?" 
+		String url = buildUrl(url_elements)
+				+ view_name + "?"
 				+ settingsBuilder(view_settings);
-		
+
 		return url;
 	}
 

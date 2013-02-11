@@ -18,7 +18,7 @@ import org.neo4j.kernel.impl.util.FileUtils;
 import db.neo4j.TweetRelationship;
 import db.neo4j.NodeType;
 
-public class EmbeddedNeo4jClient 
+public class EmbeddedNeo4jClient
 {
 	// --- Fields ---
 	public GraphDatabaseService graph_db;
@@ -32,7 +32,7 @@ public class EmbeddedNeo4jClient
 	private RelationshipIndex shares_rel_index;
 
 	// --- Constructor ---
-	public EmbeddedNeo4jClient(String db_path) 
+	public EmbeddedNeo4jClient(String db_path)
 	{
 		this.db_path = db_path;
 	}
@@ -43,12 +43,12 @@ public class EmbeddedNeo4jClient
 	 * @return
 	 * 		True or false for success or failure
 	 */
-	public boolean connect() 
+	public boolean connect()
 	{
 		// create db object
 		this.graph_db = new EmbeddedGraphDatabase(this.db_path);
 		registerShutdownHook(this.graph_db);
-		
+
 		initIndexes();
 
 		if (this.graph_db != null)
@@ -62,11 +62,11 @@ public class EmbeddedNeo4jClient
 	 * @return
 	 * 		True or false for success or failure
 	 */
-	private boolean initIndexes() 
+	private boolean initIndexes()
 	{
 		try {
 			index_manager = this.graph_db.index();
-			
+
 			user_index = index_manager.forNodes("users");
 			hashtag_index = index_manager.forNodes("hashtags");
 			url_index = index_manager.forNodes("urls");
@@ -85,7 +85,7 @@ public class EmbeddedNeo4jClient
 	/**
 	 * Disconnect from embedded database
 	 */
-	public void disconnect() 
+	public void disconnect()
 	{
 		System.out.println("shutting down graph database [neo4j]");
 		this.graph_db.shutdown();
@@ -93,10 +93,10 @@ public class EmbeddedNeo4jClient
 
 	/**
 	 * Registers the graph database for shutdown
-	 * 
+	 *
 	 * @param graphDb
 	 */
-	private static void registerShutdownHook(final GraphDatabaseService graphDb) 
+	private static void registerShutdownHook(final GraphDatabaseService graphDb)
 	{
 		// Registers a shutdown hook for the Neo4j instance so that it
 		// shuts down nicely when the VM exits (even if you "Ctrl-C" the
@@ -112,7 +112,7 @@ public class EmbeddedNeo4jClient
 	/**
 	 * Drops the graph database
 	 */
-	public void dropDatabase() 
+	public void dropDatabase()
 	{
 		try {
 			FileUtils.deleteRecursively(new File(this.db_path));
@@ -123,11 +123,11 @@ public class EmbeddedNeo4jClient
 
 	/**
 	 * Checks to see if node with specific property and value exists
-	 * 
+	 *
 	 * @param node_name
 	 * @return Node or null for not exist
 	 */
-	public Node nodeExists(String node_name, String node_type) 
+	public Node nodeExists(String node_name, String node_type)
 	{
 		IndexHits<Node> hits;
 		Node node = null;
@@ -145,18 +145,18 @@ public class EmbeddedNeo4jClient
 			node = hits.getSingle();
 		else if (hits.size() > 1)
 			throw new RuntimeException();
-		
+
 		hits.close(); // very important!
 		return node;
 	}
 
 	/**
 	 * Create a new node
-	 * 
+	 *
 	 * @param node_name
 	 * @return
 	 */
-	public boolean addNode(String node_type, String value) 
+	public boolean addNode(String node_type, String value)
 	{
 		boolean outcome = false;
 
@@ -192,11 +192,11 @@ public class EmbeddedNeo4jClient
 
 	/**
 	 * Delete the Node and its relationship to other nodes
-	 * 
+	 *
 	 * @param node_name
 	 * @return True or False
 	 */
-	public boolean deleteNode(String node_name, String node_type) 
+	public boolean deleteNode(String node_name, String node_type)
 	{
 		boolean outcome = false;
 		Transaction tx = this.graph_db.beginTx();
@@ -232,11 +232,11 @@ public class EmbeddedNeo4jClient
 
 	/**
 	 * Increment the node's weight
-	 * 
+	 *
 	 * @param node_name
 	 * @return True or False
 	 */
-	public boolean incrementNodeWeight(Node node) 
+	public boolean incrementNodeWeight(Node node)
 	{
 		boolean outcome = false;
 		Transaction tx = this.graph_db.beginTx();
@@ -260,7 +260,7 @@ public class EmbeddedNeo4jClient
 
 	/**
 	 * Obtain relationship between two nodes
-	 * 
+	 *
 	 * @param node_1
 	 * @param node_2
 	 * @param rel_type
@@ -268,58 +268,56 @@ public class EmbeddedNeo4jClient
 	 * 		Relationship between node 1 and 2 or else returns null
 	 */
 	public Relationship getRelationship(
-			Node node_1, 
+			Node node_1,
 			Node node_2,
-			RelationshipType rel_type) 
+			RelationshipType rel_type)
 	{
 		IndexHits<Relationship> hits = null;
 		Relationship rel = null;
-		
-		try {
-			// check to see if relationship already exists in index
-			if (rel_type.equals(TweetRelationship.Type.MENTIONS)) {
-				hits = mentions_rel_index.get(
-						"target", 
-						node_2.getProperty("value"), 
-						node_1, 
-						node_2);
-			} else if (rel_type.equals(TweetRelationship.Type.HASH_TAGS)) {
-				hits = hashtags_rel_index.get(
-						"target", 
-						node_2.getProperty("value"), 
-						node_1, 
-						node_2);
-			} else if (rel_type.equals(TweetRelationship.Type.SHARES_URL)) {
-				hits = shares_rel_index.get(
-						"target", 
-						node_2.getProperty("value"), 
-						node_1, 
-						node_2);
-			} else {
-				throw new RuntimeException();
-			}
-		
-			if (hits != null && hits.size() == 1) rel = hits.getSingle();
-			else if (hits.size() > 1) throw new RuntimeException();
-			
-			hits.close(); // very important!
-		} catch (NullPointerException e) {}
-		
+
+		// check to see if relationship already exists in index
+		if (rel_type.equals(TweetRelationship.Type.MENTIONS)) {
+			hits = mentions_rel_index.get(
+					"target",
+					node_2.getProperty("value"),
+					node_1,
+					node_2);
+		} else if (rel_type.equals(TweetRelationship.Type.HASH_TAGS)) {
+			hits = hashtags_rel_index.get(
+					"target",
+					node_2.getProperty("value"),
+					node_1,
+					node_2);
+		} else if (rel_type.equals(TweetRelationship.Type.SHARES_URL)) {
+			hits = shares_rel_index.get(
+					"target",
+					node_2.getProperty("value"),
+					node_1,
+					node_2);
+		} else {
+			throw new RuntimeException();
+		}
+
+		if (hits != null && hits.size() == 1) rel = hits.getSingle();
+		else if (hits.size() > 1) throw new RuntimeException();
+
+		hits.close(); // very important!
+
 		return rel;
 	}
 
 	/**
 	 * Create relationship between two nodes
-	 * 
+	 *
 	 * @param node_1
 	 * @param node_2
 	 * @param rel_type
 	 * @return
 	 */
 	public boolean createRelationship(
-			Node node_1, 
+			Node node_1,
 			Node node_2,
-			RelationshipType rel_type) throws RuntimeException 
+			RelationshipType rel_type) throws RuntimeException
 	{
 		boolean outcome = false;
 		Relationship rel = null;
@@ -334,22 +332,22 @@ public class EmbeddedNeo4jClient
 			} else {
 				return false;
 			}
-				
+
 			// add node to corresponding index
 			if (rel_type.equals(TweetRelationship.Type.MENTIONS)) {
 				mentions_rel_index.add(
-						rel, 
-						"target", 
+						rel,
+						"target",
 						node_2.getProperty("value"));
 			} else if (rel_type.equals(TweetRelationship.Type.HASH_TAGS)) {
 				hashtags_rel_index.add(
-						rel, 
-						"target", 
+						rel,
+						"target",
 						node_2.getProperty("value"));
 			} else if (rel_type.equals(TweetRelationship.Type.SHARES_URL)) {
 				shares_rel_index.add(
-						rel, 
-						"target", 
+						rel,
+						"target",
 						node_2.getProperty("value"));
 			}
 
@@ -365,7 +363,7 @@ public class EmbeddedNeo4jClient
 
 	/**
 	 * Remove relationship between two nodes
-	 * 
+	 *
 	 * @param node_1
 	 * @param node_2
 	 * @param rel_type
@@ -373,17 +371,17 @@ public class EmbeddedNeo4jClient
 	public void removeRelationship(
 			Node node_1,
 			Node node_2,
-			RelationshipType rel_type) 
+			RelationshipType rel_type)
 	{
 		getRelationship(node_1, node_2, rel_type).delete();
 	}
 
 	/**
 	 * Checks to see if connected
-	 * 
+	 *
 	 * @return
 	 */
-	public boolean connected() 
+	public boolean connected()
 	{
 		if (this.graph_db != null)
 			return true;
