@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
@@ -64,6 +65,7 @@ public class Neo4jTweetImporter
 				count++;
 
 				// try and parse tweet
+				Transaction tx = this.local_db.graph_db.beginTx();
 				try {
 					json_string = line_iter.next();
 					tweet = DataObjectFactory.createStatus(json_string);
@@ -73,10 +75,13 @@ public class Neo4jTweetImporter
 					} else {
 //						addTweetToRestfulDB(tweet);
 					}
+					tx.success();
 				} catch (TwitterException e) {
 					System.out.println("error! bad tweet on line: " + count);
 					bad_tweets_record.add(count);
 					bad_tweets++;
+				} finally {
+					tx.finish();
 				}
 			}
 		} catch (IOException e) {

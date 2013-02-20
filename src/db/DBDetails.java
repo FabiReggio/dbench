@@ -1,10 +1,9 @@
 package db;
 
 /**
- * DBDetails essentially encapsulates all the details needed to 
+ * DBDetails essentially encapsulates all the details needed to
  * connect to a database
- * @author chris choi 
- *
+ * @author chris choi
  */
 public class DBDetails {
 	// --- Fields ---
@@ -12,13 +11,13 @@ public class DBDetails {
 	private int db_port;
 	private String db_name;
 	private String db_collection;
-	
+
 	// --- Constructors ---
 	public DBDetails(
-			String db_host, 
+			String db_host,
 			int db_port,
 			String db_name,
-			String db_collection) 
+			String db_collection)
 	{
 		this.db_host = db_host;
 		this.db_port = db_port;

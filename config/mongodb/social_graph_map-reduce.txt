@@ -1,0 +1,133 @@
+var map = function() {
+    if (!this.entities) { return; }
+
+    var screen_name = this.user.screen_name;
+
+    this.entities.user_mentions.forEach(
+        function(mention) {
+            emit({
+                    "origin" : screen_name,
+                    "relationship": "mentions",
+                    "destination" : mention.screen_name
+                 },
+                 { weight : 1 });
+        }
+    )
+
+    this.entities.hashtags.forEach(
+        function(hashtag) {
+            emit({
+                    "origin" : screen_name,
+                    "relationship": "hashtags",
+                    "destination" : hashtag.text
+                 },
+                 { weight : 1 });
+        }
+    )
+
+    this.entities.urls.forEach(
+        function(url) {
+            emit({
+                    "origin" : screen_name,
+                    "relationship": "shares",
+                    "destination" : url.display_url
+                 },
+                 { weight : 1 });
+        }
+    )
+};
+
+var reduce = function(key, values) {
+     var result = { weight : 0 };
+     values.forEach(function(value) {
+             result.weight += value.weight;
+     });
+     return result;
+};
+
+db.query_test_collection.mapReduce(
+        map,
+        reduce,
+        { out : "test_social_graph"});
+
+
+# Get all the nodes that mention the start node
+var map = function() {
+    if (!this.entities) {
+        return;
+    }
+    var screen_name = this.user.screen_name;
+    emit({
+            "type" : "node",
+            "value": screen_name
+        },
+        { weight : 0 });
+
+    this.entities.user_mentions.forEach(
+        function(mention) {
+            if (mention.screen_name != "JessCalandra") {
+                return;
+            } else {
+                emit({
+                        "type" : "relationship",
+                        "origin" : screen_name,
+                        "relationship": "mentions",
+                        "destination" : mention.screen_name
+                    },
+                    { weight : 1 });
+                emit({
+                        "type" : "node",
+                        "value": mention.screen_name
+                    },
+                    { weight : 1 });
+            }
+        }
+    );
+};
+
+var reduce = function(key, values) {
+     var result = { weight : 0 };
+
+     values.forEach(function(value) {
+             result.weight += value.weight;
+     });
+
+     return result;
+};
+
+db.query_test_collection.mapReduce(
+        map,
+        reduce,
+        { out : "first_degree_nodes"});
+
+
+var map = function() {
+    if (!this.entities) {
+        return;
+    }
+    var screen_name = this.user.screen_name;
+    emit({
+            "type" : "node",
+            "value": screen_name
+        },
+        { weight : 0 });
+
+    this.entities.user_mentions.forEach(
+        function(mention) {
+            emit({
+                    "type" : "relationship",
+                    "origin" : screen_name,
+                    "relationship": "mentions",
+                    "destination" : mention.screen_name
+                 },
+                 { weight : 1 });
+            emit({
+                    "type" : "node",
+                    "value": screen_name
+                 },
+                 { weight : 1 });
+        }
+    );
+};
+
+

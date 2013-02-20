@@ -23,5 +23,7 @@
         <dependency org="org.neo4j" name="neo4j" rev="1.9.M01" />
         <dependency org="com.sun.jersey" name="jersey-client" rev="1.16"/>
         <dependency org="com.sun.jersey" name="jersey-core" rev="1.16"/>
+        
+        <dependency org="com.tinkerpop.blueprints" name="blueprints-core" rev="2.2.0"/>
 	</dependencies>
 </ivy-module>

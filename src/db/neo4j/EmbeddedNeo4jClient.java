@@ -141,10 +141,13 @@ public class EmbeddedNeo4jClient
 		else
 			throw new RuntimeException();
 
-		if (hits.size() == 1)
+		if (hits.size() == 1) {
 			node = hits.getSingle();
-		else if (hits.size() > 1)
+		} else if (hits.size() == 0) {
+			node = null;
+		} else if (hits.size() > 1) {
 			throw new RuntimeException();
+		}
 
 		hits.close(); // very important!
 		return node;
@@ -160,31 +163,28 @@ public class EmbeddedNeo4jClient
 	{
 		boolean outcome = false;
 
-		if (nodeExists(value, node_type) != null)
+		// check if node exists
+		if (nodeExists(value, node_type) != null) {
 			return outcome;
+		}
 
-		Transaction tx = this.graph_db.beginTx();
+		Node node = this.graph_db.createNode();
 
-		try {
-			Node node = this.graph_db.createNode();
+		// set node properties
+		node.setProperty("node_type", node_type);
+		node.setProperty("value", value);
+		node.setProperty("weight", 1);
 
-			// set node properties
-			node.setProperty("node_type", node_type);
-			node.setProperty("value", value);
-			node.setProperty("weight", 1);
-
-			// add node to corresponding index
-			if (node_type.equals(NodeType.USER))
-				user_index.add(node, "value", value);
-			else if (node_type.equals(NodeType.HASH_TAG))
-				hashtag_index.add(node, "value", value);
-			else if (node_type.equals(NodeType.URL))
-				url_index.add(node, "value", value);
-
-			tx.success();
+		// add node to corresponding index
+		if (node_type.equals(NodeType.USER)) {
+			user_index.add(node, "value", value);
 			outcome = true;
-		} finally {
-			tx.finish();
+		} else if (node_type.equals(NodeType.HASH_TAG)) {
+			hashtag_index.add(node, "value", value);
+			outcome = true;
+		} else if (node_type.equals(NodeType.URL)) {
+			url_index.add(node, "value", value);
+			outcome = true;
 		}
 
 		return outcome;
@@ -239,21 +239,14 @@ public class EmbeddedNeo4jClient
 	public boolean incrementNodeWeight(Node node)
 	{
 		boolean outcome = false;
-		Transaction tx = this.graph_db.beginTx();
 
-		try {
-			// get current weight and increment
-			int weight = (Integer) node.removeProperty("weight");
-			weight += 1;
+		// get current weight and increment
+		int weight = (Integer) node.removeProperty("weight");
+		weight += 1;
 
-			// update new weight
-			node.setProperty("weight", weight);
-
-			outcome = true;
-			tx.success();
-		} finally {
-			tx.finish();
-		}
+		// update new weight
+		node.setProperty("weight", weight);
+		outcome = true;
 
 		return outcome;
 	}
@@ -322,41 +315,47 @@ public class EmbeddedNeo4jClient
 		boolean outcome = false;
 		Relationship rel = null;
 
-		Transaction tx = this.graph_db.beginTx();
-		try {
-			// check if relationship exists
-			if (getRelationship(node_1, node_2, rel_type) == null) {
-				rel = node_1.createRelationshipTo(node_2, rel_type);
-				rel.setProperty("from", node_1.getProperty("value"));
-				rel.setProperty("to", node_2.getProperty("value"));
-			} else {
-				return false;
-			}
-
-			// add node to corresponding index
-			if (rel_type.equals(TweetRelationship.Type.MENTIONS)) {
-				mentions_rel_index.add(
-						rel,
-						"target",
-						node_2.getProperty("value"));
-			} else if (rel_type.equals(TweetRelationship.Type.HASH_TAGS)) {
-				hashtags_rel_index.add(
-						rel,
-						"target",
-						node_2.getProperty("value"));
-			} else if (rel_type.equals(TweetRelationship.Type.SHARES_URL)) {
-				shares_rel_index.add(
-						rel,
-						"target",
-						node_2.getProperty("value"));
-			}
-
-			// commit
-			tx.success();
-		} finally {
-			tx.finish();
-			outcome = true;
+		// check if relationship exists
+		if (getRelationship(node_1, node_2, rel_type) == null) {
+			rel = node_1.createRelationshipTo(node_2, rel_type);
+			rel.setProperty("from", node_1.getProperty("value"));
+			rel.setProperty("to", node_2.getProperty("value"));
+		} else {
+//			System.out.println("relationship already exists between " 
+//						+ node_1.getProperty("value")
+//						+ " "
+//						+ node_2.getProperty("value"));
+			return false;
 		}
+
+		// add node to corresponding index
+		if (rel_type.equals(TweetRelationship.Type.MENTIONS)) {
+			mentions_rel_index.add(
+					rel,
+					"target",
+					node_2.getProperty("value"));
+			outcome = true;
+		} else if (rel_type.equals(TweetRelationship.Type.HASH_TAGS)) {
+			hashtags_rel_index.add(
+					rel,
+					"target",
+					node_2.getProperty("value"));
+			outcome = true;
+		} else if (rel_type.equals(TweetRelationship.Type.SHARES_URL)) {
+			shares_rel_index.add(
+					rel,
+					"target",
+					node_2.getProperty("value"));
+			outcome = true;
+		} else {
+			System.out.println("ERROR! failed to add relationship between "
+						+ node_1.getProperty("value")
+						+ " "
+						+ node_2.getProperty("value")
+						+ "to index");
+			outcome = false;
+		}
+
 
 		return outcome;
 	}
