@@ -7,24 +7,24 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-public class MongoDBTweetSocialGraph 
+public class MongoDBTweetSocialGraph
 {
 	// --- Fields ---
 	private DBCollection collection;
 	private MongoDBClient mongodb;
-	
+
 	// --- Constructor ---
 	public MongoDBTweetSocialGraph(MongoDBClient mongodb)
 	{
 		this.mongodb = mongodb;
 		this.collection = mongodb.getCollection();
 	}
-	
+
 	// --- Methods ---
 	/**
-	 * Builds an if statement containing nodes to igore during the Map-Reduce 
+	 * Builds an if statement containing nodes to igore during the Map-Reduce
 	 * function.
-	 * 
+	 *
 	 * @param type
 	 * @param node_list
 	 * 		List of nodes to ignore
@@ -33,55 +33,55 @@ public class MongoDBTweetSocialGraph
 	 * 		in between)
 	 */
 	private String setOfNodesToInclude(
-			String type, 
-			ArrayList<String> node_list) 
+			String type,
+			ArrayList<String> node_list)
 	{
 		String cmd = "";
-				
+
 		cmd = "if (";
-		
+
 		for (String node : node_list) {
 			cmd += type + " == '" + node + "' || ";
 		}
-		
-		cmd = cmd.substring(0, cmd.length() - " || ".length()); 
+
+		cmd = cmd.substring(0, cmd.length() - " || ".length());
 		cmd += ") {";
 		return cmd;
 	}
-	
+
 	/**
-	 * Builds an if statement to include only certain nodes during the 
+	 * Builds an if statement to include only certain nodes during the
 	 * Map-Reduce function.
-	 * 
+	 *
 	 * @param type
 	 * @param node_list
 	 * 		List of nodes to ignore
 	 * @return
-	 * 		Complete if statement 
+	 * 		Complete if statement
 	 */
 	private String includeOnlyTheseNodes(
-			String type, 
-			ArrayList<String> node_list) 
+			String type,
+			ArrayList<String> node_list)
 	{
 		String cmd = "";
-				
+
 		cmd = "if (";
-		
+
 		for (String node : node_list) {
 			cmd += type + " != '" + node + "' || ";
 		}
-		
-		cmd = cmd.substring(0, cmd.length() - " || ".length()); 
+
+		cmd = cmd.substring(0, cmd.length() - " || ".length());
 		cmd += ") { return; }";
-		
+
 		return cmd;
 	}
-	
+
 	/**
 	 * Essentially an iterative breadth first search to obtain a social graph.
-	 * But does not always start from the top, it works from the N-th degree 
+	 * But does not always start from the top, it works from the N-th degree
 	 * set from param degree.
-	 * 
+	 *
 	 * @param node_list
 	 * 		Nodes to ignore
 	 * @param degree
@@ -92,18 +92,18 @@ public class MongoDBTweetSocialGraph
 		try {
 			String ignore_type = "mention.screen_name";
 			String include_only = "";
-			
+
 			// if last degree, only consider previous discovered nodes
 			if (last) {
 				include_only = includeOnlyTheseNodes(
-						"mention.screen_name",
+						"this.screen_name",
 						node_list);
 			}
-			
+
 			String map = ""
 				+ "function() {"
 			    + "		if (!this.entities) { return; }"
-				+ "		" + include_only	
+				+ "		" + include_only
 			    + "		var screen_name = this.user.screen_name;"
 				+ "		emit({"
 				+ "				'type' : 'node',"
@@ -113,7 +113,7 @@ public class MongoDBTweetSocialGraph
 				+ ""
 				+ "		this.entities.user_mentions.forEach("
 				+ "			function(mention) {"
-				+ "				" + setOfNodesToInclude(ignore_type, node_list)		
+				+ "				" + setOfNodesToInclude(ignore_type, node_list)
 				+ "					emit({"
 				+ "							'type' : 'relationship',"
 				+ "							'origin' : screen_name,"
@@ -126,11 +126,13 @@ public class MongoDBTweetSocialGraph
 				+ "							'value' : mention.screen_name"
 				+ "						},"
 				+ "		   				{ 'weight' : 1 });"
-				+ " 			}"	// end brace for the if statement		
+				+ " 			}"	// end brace for the if statement
 				+ "			}"
 				+ "		)"
 				+ "	};";
-	
+
+			System.out.println(map);
+
 			String reduce = ""
 				+ "function(key, values) {"
 				+ "    var result = { weight : 0 };"
@@ -141,17 +143,18 @@ public class MongoDBTweetSocialGraph
 				+ "}";
 //			System.out.println(map);
 //			System.out.println(reduce);
-			
+
 	        this.collection.mapReduce(
-	                map, 
-	                reduce, 
+	                map,
+	                reduce,
 	                "degree_" + degree,
 	                null);
+	        System.out.println("finished map reduce");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Obtain a node list from newly created degree collection
 	 * @param degree
@@ -165,37 +168,40 @@ public class MongoDBTweetSocialGraph
 		ArrayList<String> node_list = new ArrayList<String>();
 		DBObject pattern = new BasicDBObject();
 		pattern.put("_id.type", "node");
-		
-		DBCollection degree_col = this.collection.getCollection(
-				"degree_" + degree);
+		String degree_string = "degree_" + degree;
+		System.out.println("getting collection " + degree_string);
+
+		this.mongodb.setCollection(degree_string);
+		DBCollection degree_col = this.mongodb.getCollection();
 		DBCursor cursor = degree_col.find(pattern);
 		for (DBObject db_obj : cursor) {
-			System.out.println(db_obj.toString());
-			node_list.add((String) db_obj.get("_id.value"));
+			DBObject id = (DBObject) db_obj.get("_id");
+			node_list.add((String) id.get("value"));
 		}
-		
+		this.mongodb.setCollection("sample_data");
+
 		return node_list;
 	}
-	
+
 	/**
 	 * Creates a social graph
 	 * @param start_node
-	 * 		Node you wish to start transversing from 
+	 * 		Node you wish to start transversing from
 	 * @param degree
 	 * 		Degress of freedom
 	 */
-	public void createSocialGraph(String start_node, int degree) 
+	public void createSocialGraph(String start_node, int degree)
 	{
 		ArrayList<String> node_list = new ArrayList<String>();
 		node_list.add(start_node);
 		boolean last = false;
-		
+
 		for (int i = 1; i <= degree; i++) {
 			if (i == degree) {
 				last = true;
 			}
 			System.out.println("creating social graph degree leve " + i);
-			
+
 			branchOut(node_list, i, last);
 			node_list = obtainNodeList(i);
 		}
