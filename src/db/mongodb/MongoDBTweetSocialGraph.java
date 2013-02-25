@@ -62,7 +62,7 @@ public class MongoDBTweetSocialGraph
 	 * @return
 	 * 		Complete if statement
 	 */
-	private String includeOnlyTheseNodes(
+	private String ignoreNodes(
 			String type,
 			ArrayList<String> node_list)
 	{
@@ -71,7 +71,7 @@ public class MongoDBTweetSocialGraph
 		cmd = "if (";
 
 		for (String node : node_list) {
-			cmd += type + " != '" + node + "' || ";
+			cmd += type + " == '" + node + "' || ";
 		}
 
 		cmd = cmd.substring(0, cmd.length() - " || ".length());
@@ -94,11 +94,11 @@ public class MongoDBTweetSocialGraph
 	{
 		try {
 			String ignore_type = "mention.screen_name";
-			String include_only = "";
+			String ignore_nodes = "";
 
 			// if last degree, only consider previous discovered nodes
 			if (last) {
-				include_only = includeOnlyTheseNodes(
+				ignore_nodes = ignoreNodes(
 						"this.screen_name",
 						node_list);
 			}
@@ -106,13 +106,8 @@ public class MongoDBTweetSocialGraph
 			String map = ""
 				+ "function() {"
 			    + "		if (!this.entities) { return; }"
-				+ "		" + include_only
+				+ "		" + ignore_nodes
 			    + "		var screen_name = this.user.screen_name;"
-				+ "		emit({"
-				+ "				'type' : 'node',"
-				+ "				'value' : screen_name"
-				+ "			},"
-				+ "		   	{ 'weight' : 0 });"
 				+ ""
 				+ "		this.entities.user_mentions.forEach("
 				+ "			function(mention) {"
@@ -129,6 +124,11 @@ public class MongoDBTweetSocialGraph
 				+ "							'value' : mention.screen_name"
 				+ "						},"
 				+ "		   				{ 'weight' : 1 });"
+				+ "		            emit({"
+				+ "				            'type' : 'node',"
+				+ "				            'value' : screen_name"
+				+ "			            },"
+				+ "         		   	{ 'weight' : 1 });"
 				+ " 			}"	// end brace for the if statement
 				+ "			}"
 				+ "		)"
@@ -173,14 +173,14 @@ public class MongoDBTweetSocialGraph
 		System.out.println("getting collection " + degree_string);
 		this.mongodb.setCollection(degree_string);
 		DBCollection degree_col = this.mongodb.getCollection();
-		
+
 		// get data from collection
 		DBCursor cursor = degree_col.find(pattern);
 		for (DBObject db_obj : cursor) {
 			DBObject id = (DBObject) db_obj.get("_id");
 			node_list.add((String) id.get("value"));
 		}
-		
+
 		// revert back to original collection
 		this.mongodb.setCollection(this.collection_name);
 		this.collection = this.mongodb.getCollection();

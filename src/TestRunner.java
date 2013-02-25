@@ -96,10 +96,10 @@ public class TestRunner {
 //		);
 
 		// social graph
-		String collection = "sample_data";
+		String collection = "query_test_collection";
 		MongoDBClient client = new MongoDBClient();
-		client.connect("e-research.cs.st-andrews.ac.uk", 27017, "db_tests");
-		MongoDBTweetSocialGraph graph = 
+		client.connect("mongo01", 27017, "db_tests");
+		MongoDBTweetSocialGraph graph =
 				new MongoDBTweetSocialGraph(client, collection);
 		graph.createSocialGraph("London2012", 2);
 
