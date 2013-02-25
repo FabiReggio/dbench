@@ -15,7 +15,7 @@ import dbtest.mongodb.MongoDBAggregationTest;
 
 /**
  * TestRunner as the name suggests is where the tests are executed from
- * 
+ *
  * @author Chris Choi
  */
 public class TestRunner {
@@ -25,12 +25,12 @@ public class TestRunner {
 
 	// --- Methods ---
 	public static void aggregationTest(
-			String type, 
+			String type,
 			String host,
-			String db_name, 
-			String db_table, 
-			String res_path, 
-			String test_mode) 
+			String db_name,
+			String db_table,
+			String res_path,
+			String test_mode)
 	{
 		if (type.equals("couchbase")) {
 			CouchbaseAggregationTest couchbase = new CouchbaseAggregationTest(
@@ -45,12 +45,12 @@ public class TestRunner {
 	}
 
 	public static void fullTextSearchTest(
-			String type, 
+			String type,
 			String host,
-			String db_name, 
-			String db_table, 
-			String res_path, 
-			String test_mode) 
+			String db_name,
+			String db_table,
+			String res_path,
+			String test_mode)
 	{
 		if (type.equals("mongodb")) {
 		}
@@ -68,8 +68,8 @@ public class TestRunner {
 		// results folder
 		String number_of_shards = "1";
 		String shards_per_node = "4";
-		String results_folder = number_of_shards 
-				+ "shards-" 
+		String results_folder = number_of_shards
+				+ "shards-"
 				+ shards_per_node + "per_shard";
 
 		// create results folder if doesn't exist
@@ -84,22 +84,23 @@ public class TestRunner {
 				System.exit(-1);
 			}
 		}
-		
+
 		// test settings
 //		TestRunner.aggregationTest(
-//				"mongodb", 
+//				"mongodb",
 //				"e-research.cs.st-andrews.ac.uk",
 //				"db_tests",
 //				"sample_data",
-//				results_folder + "/", 
+//				results_folder + "/",
 //				"map-reduce"
 //		);
 
 		// social graph
+		String collection = "sample_data";
 		MongoDBClient client = new MongoDBClient();
 		client.connect("e-research.cs.st-andrews.ac.uk", 27017, "db_tests");
-		client.setCollection("sample_data");
-		MongoDBTweetSocialGraph graph = new MongoDBTweetSocialGraph(client);
+		MongoDBTweetSocialGraph graph = 
+				new MongoDBTweetSocialGraph(client, collection);
 		graph.createSocialGraph("London2012", 2);
 
 	}

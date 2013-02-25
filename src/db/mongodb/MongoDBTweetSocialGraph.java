@@ -11,12 +11,15 @@ public class MongoDBTweetSocialGraph
 {
 	// --- Fields ---
 	private DBCollection collection;
+	private String collection_name;
 	private MongoDBClient mongodb;
 
 	// --- Constructor ---
-	public MongoDBTweetSocialGraph(MongoDBClient mongodb)
+	public MongoDBTweetSocialGraph(MongoDBClient mongodb, String collection)
 	{
 		this.mongodb = mongodb;
+		this.collection_name = collection;
+		mongodb.setCollection(collection);
 		this.collection = mongodb.getCollection();
 	}
 
@@ -131,8 +134,6 @@ public class MongoDBTweetSocialGraph
 				+ "		)"
 				+ "	};";
 
-			System.out.println(map);
-
 			String reduce = ""
 				+ "function(key, values) {"
 				+ "    var result = { weight : 0 };"
@@ -141,8 +142,6 @@ public class MongoDBTweetSocialGraph
 				+ "    });"
 				+ "    return result;"
 				+ "}";
-//			System.out.println(map);
-//			System.out.println(reduce);
 
 	        this.collection.mapReduce(
 	                map,
@@ -168,17 +167,23 @@ public class MongoDBTweetSocialGraph
 		ArrayList<String> node_list = new ArrayList<String>();
 		DBObject pattern = new BasicDBObject();
 		pattern.put("_id.type", "node");
+
+		// change to degree collection
 		String degree_string = "degree_" + degree;
 		System.out.println("getting collection " + degree_string);
-
 		this.mongodb.setCollection(degree_string);
 		DBCollection degree_col = this.mongodb.getCollection();
+		
+		// get data from collection
 		DBCursor cursor = degree_col.find(pattern);
 		for (DBObject db_obj : cursor) {
 			DBObject id = (DBObject) db_obj.get("_id");
 			node_list.add((String) id.get("value"));
 		}
-		this.mongodb.setCollection("sample_data");
+		
+		// revert back to original collection
+		this.mongodb.setCollection(this.collection_name);
+		this.collection = this.mongodb.getCollection();
 
 		return node_list;
 	}
