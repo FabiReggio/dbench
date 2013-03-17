@@ -84,6 +84,19 @@
 	<target name="run" depends="compile">
         <java classname="TestRunner" fork="true">
 			<classpath refid="runpath"/>
+			<arg value="${arg0}" />
+			<arg value="${arg1}" />
+			<arg value="${arg2}" />
+			<arg value="${arg3}" />
+			<arg value="${arg4}" />
+			<arg value="${arg5}" />
+			<arg value="${arg6}" />
+			<arg value="${arg7}" />
+			<arg value="${arg8}" />
+			<arg value="${arg9}" />
+			<arg value="${arg10}" />
+			<arg value="${arg11}" />
+			<arg value="${arg12}" />
 		</java>
 	</target>
 

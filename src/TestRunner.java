@@ -68,11 +68,25 @@ public class TestRunner {
         System.out.println(" --shardsPerNode");
     }
 
-	// --- Main ---
-	public static void main(String[] argv) {
-		TestRunner test = new TestRunner();
+    public static void mkDir(String path)
+    {
+		File dir = new File(path);
+		if (dir.exists() == false) {
+			System.out.println("creating directory: " + path);
+			boolean result = dir.mkdir();
+			if (result) {
+				System.out.println("[" + path + "] created");
+			} else {
+				System.out.println("failed to create dir (check permissions?)");
+				System.exit(-1);
+			}
+		}
 
-		String neo4j_server_uri = "http://localhost:7474/db/data/";
+    }
+
+	// --- Main ---
+	public static void main(String[] argv)
+	{
 		String dbhost = "";
 		String dbname = "";
 		String dbcollection = "";
@@ -81,56 +95,56 @@ public class TestRunner {
 		String shards_per_node = "";
 
 		// parse command line arguments
-		if (argv.length != 12) {
+		if (argv.length < 10) {
             TestRunner.usage();
         } else {
-            if (argv[0].equals("--host") == false
-                    || argv[2].equals("--database") == false
-                    || argv[4].equals("--collection") == false
-                    || argv[6].equals("--outputDir") == false
-                    || argv[8].equals("--numberOfShards") == false
-                    || argv[10].equals("--shardsPerNode") == false) {
-                dbhost = argv[1];
-                dbname = argv[3];
-                dbcollection = argv[5];
-                output_dir = argv[7];
-                number_of_shards = argv[9];
-                shards_per_node = argv[11];
-            }
+            if (argv[0].equals("--host")) dbhost = argv[1];
+            else System.out.println("argument 1 should be --host");
+
+            if (argv[2].equals("--database")) dbname = argv[3];
+            else System.out.println("arugment 3 should be --database");
+
+            if (argv[4].equals("--collection")) dbcollection = argv[5];
+            else System.out.println("arugment 5 should be --collection");
+
+            if (argv[6].equals("--outputDir")) output_dir = argv[7];
+            else System.out.println("arugment 7 should be --outputDir");
+
+            if (argv[8].equals("--numberOfShards")) number_of_shards = argv[9];
+            else System.out.println("arugment 9 should be --numberOfShards");
+
+            if (argv[10].equals("--shardsPerNode"))  shards_per_node = argv[11];
+            else System.out.println("arugment 1 should be --shardsPerNode");
         }
 
-		// results folder
-		/* String results_folder = number_of_shards */
-		/* 		+ "shards-" */
-		/* 		+ shards_per_node + "per_shard"; */
+        System.out.println("--- Benchmarking settings ---");
+        System.out.println("dbhost: " + dbhost);
+        System.out.println("dbname: " + dbname);
+        System.out.println("dbcollection: " + dbcollection);
+        System.out.println("output_dir: " + output_dir);
+        System.out.println("number_of_shards: " + number_of_shards);
+        System.out.println("shards_per_node: " + shards_per_node);
 
-		/* // create results folder if doesn't exist */
-		/* File results_dir = new File(results_folder); */
-		/* if (results_dir.exists() == false) { */
-		/* 	System.out.println("creating directory: " + results_folder); */
-		/* 	boolean result = results_dir.mkdir(); */
-		/* 	if (result) { */
-		/* 		System.out.println("[" + results_folder + "] created"); */
-		/* 	} else { */
-		/* 		System.out.println("failed to create dir (check permissions?)"); */
-		/* 		System.exit(-1); */
-		/* 	} */
-		/* } */
+		// create results folder if doesn't exist
+		String shards_dir = output_dir + number_of_shards + "_shards/";
+		String shards_per_node_dir = shards_dir + shards_per_node +"_shards_per_node/";
+        mkDir(output_dir);
+        mkDir(shards_dir);
+        mkDir(shards_per_node_dir);
 
-		/* // test settings */
-		/* TestRunner.aggregationTest( */
-		/* 		"mongodb", */
-		/* 		"e-research.cs.st-andrews.ac.uk", */
-		/* 		"db_tests", */
-		/* 		"sample_data", */
-		/* 		results_folder + "/", */
-		/* 		"map-reduce" */
-		/* ); */
+		// test settings
+		TestRunner.aggregationTest(
+				"mongodb",
+				dbhost,
+				dbname,
+				dbcollection,
+				shards_per_node_dir,
+				"map-reduce"
+		);
 
 		// social graph
-		/* String collection = "query_test_collection"; */
 		/* MongoDBClient client = new MongoDBClient(); */
-		/* client.connect("mongo01", 27017, "db_tests"); */
+		/* client.connect(dbhost, 27017, dbname); */
 		/* MongoDBTweetSocialGraph graph = */
 		/* 		new MongoDBTweetSocialGraph(client, collection); */
 		/* graph.createSocialGraph("London2012", 2); */
