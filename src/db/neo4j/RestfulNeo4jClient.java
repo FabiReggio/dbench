@@ -13,17 +13,17 @@ import com.sun.jersey.api.client.WebResource;
 public class RestfulNeo4jClient
 {
 	// --- Fields ---
-    private String SERVER_ADDRESS;
-    private String SERVER_PORT;
+//    private String SERVER_ADDRESS;
+//    private String SERVER_PORT;
 	private static String SERVER_URI;
 
 
 	// --- Constructors ---
 	public RestfulNeo4jClient(String addr, String port)
 	{
-		this.SERVER_ADDRESS = addr;
-		this.SERVER_PORT = port;
-		this.SERVER_URI = addr + ":" + port + "/db/data";
+//		this.SERVER_ADDRESS = addr;
+//		this.SERVER_PORT = port;
+//		this.SERVER_URI = addr + ":" + port + "/db/data";
 
 		if (connect() == false)
 			throw new RuntimeException();

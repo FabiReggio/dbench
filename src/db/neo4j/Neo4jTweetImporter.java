@@ -20,7 +20,7 @@ public class Neo4jTweetImporter
 {
 	// --- Fields ---
 	private EmbeddedNeo4jClient local_db;
-	private RestfulNeo4jClient restful_db;
+//	private RestfulNeo4jClient restful_db;
 
 	// --- Constructors ---
 	public Neo4jTweetImporter(EmbeddedNeo4jClient client)
@@ -30,7 +30,7 @@ public class Neo4jTweetImporter
 
 	public Neo4jTweetImporter(RestfulNeo4jClient client)
 	{
-		this.restful_db = client;
+//		this.restful_db = client;
 	}
 
 	// --- Methods ---

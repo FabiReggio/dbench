@@ -1,6 +1,6 @@
 package db.couchbase;
 
-import java.net.HttpURLConnection;
+//import java.net.HttpURLConnection;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.client.methods.HttpGet;

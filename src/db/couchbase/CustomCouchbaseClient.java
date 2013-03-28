@@ -2,17 +2,10 @@ package db.couchbase;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -20,22 +13,18 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.RuntimeErrorException;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.couchbase.client.CouchbaseClient;
-import com.couchbase.client.protocol.views.Query;
 
 import twitter4j.Status;
 import twitter4j.TwitterException;
@@ -53,7 +42,7 @@ public class CustomCouchbaseClient
 	private String restful_port = "8092";
 	private String user = "";
 	private String pass = "";
-	private ArrayList<String> url_elements = new ArrayList<String>();
+//	private ArrayList<String> url_elements = new ArrayList<String>();
 	
 	// --- Constructors ---
 	public CustomCouchbaseClient(String host, String bucket) 
@@ -114,9 +103,9 @@ public class CustomCouchbaseClient
 	 
 			if (entity != null) {
 				// load json object
-				InputStream in = entity.getContent();
-				String json_string = convertInputStreamToString(in);
-				JSONObject json = new JSONObject(json_string);
+//				InputStream in = entity.getContent();
+//				String json_string = convertInputStreamToString(in);
+//				JSONObject json = new JSONObject(json_string);
 			}
 			
 			return true;
@@ -124,8 +113,8 @@ public class CustomCouchbaseClient
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (JSONException e) {
-			e.printStackTrace();
+//		} catch (JSONException e) {
+//			e.printStackTrace();
 		}
 		
 		return false;

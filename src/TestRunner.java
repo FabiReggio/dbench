@@ -134,7 +134,12 @@ public class TestRunner {
         mkDir(shards_per_node_dir);
 
         // sleep for 2 minutes
-        Thread.currentThread().sleep(2000);
+        try {
+			Thread.currentThread();
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 
 		// test settings
 		TestRunner.aggregationTest(
