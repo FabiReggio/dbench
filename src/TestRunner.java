@@ -1,5 +1,6 @@
 import java.io.File;
 import java.util.Map;
+import java.lang.Thread;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -132,6 +133,9 @@ public class TestRunner {
         mkDir(shards_dir);
         mkDir(shards_per_node_dir);
 
+        // sleep for 2 minutes
+        Thread.currentThread().sleep(2000);
+
 		// test settings
 		TestRunner.aggregationTest(
 				"mongodb",
@@ -148,6 +152,8 @@ public class TestRunner {
 		/* MongoDBTweetSocialGraph graph = */
 		/* 		new MongoDBTweetSocialGraph(client, collection); */
 		/* graph.createSocialGraph("London2012", 2); */
+
+		System.exit(0);
 
 	}
 }
